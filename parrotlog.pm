@@ -6,7 +6,6 @@ use XML::RAI;
 use HTML::Entities;
 use WWW::Shorten::Metamark;
 use WWW::Shorten 'Metamark';
-XML::RAI::Item->add_mapping('branch', qw(dc:branch));
 
 # Parse RSS generated from trac's "revision log" page.
 

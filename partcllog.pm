@@ -1,7 +1,6 @@
 package modules::local::partcllog;
 use strict;
 use warnings;
-use LWP::UserAgent;
 use XML::Atom::Client;
 use HTML::Entities;
 use WWW::Shorten::Metamark;

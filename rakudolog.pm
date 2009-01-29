@@ -1,7 +1,6 @@
 package modules::local::rakudolog;
 use strict;
 use warnings;
-use LWP::UserAgent;
 use XML::Atom::Client;
 use HTML::Entities;
 use WWW::Shorten::Metamark;
@@ -32,10 +31,6 @@ sub shutdown {
     main::delete_timer("rakudolog_fetch_feed_timer");
     main::store_item($self, "rakudo_lastrev", $lastrev) if defined $lastrev;
 }
-
-my $lwp = LWP::UserAgent->new();
-$lwp->timeout(10);
-$lwp->env_proxy();
 
 sub fetch_feed {
     my $atom = XML::Atom::Client->new();
