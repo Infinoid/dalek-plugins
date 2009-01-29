@@ -10,7 +10,7 @@ XML::RAI::Item->add_mapping('branch', qw(dc:branch));
 
 # Parse RSS generated from trac's "revision log" page.
 
-my $url  = 'http://trac.parrot.org/parrot/log/?limit=20&mode=stop_on_copy&format=rss';
+my $url  = 'http://trac.parrot.org/parrot/log/?limit=100&mode=stop_on_copy&format=rss';
 my $lastrev;
 my $copy_of_self;
 
