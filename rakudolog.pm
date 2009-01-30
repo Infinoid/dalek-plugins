@@ -43,7 +43,7 @@ sub process_feed {
     my @items = $feed->entries;
     @items = sort { $a->updated cmp $b->updated } @items; # ascending order
     my $newest = $items[-1];
-    my $latest = $items[0]->updated;
+    my $latest = $newest->updated;
 
     # skip the first run, to prevent new installs from flooding the channel
     if(defined($lastrev)) {
