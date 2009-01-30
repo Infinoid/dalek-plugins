@@ -44,6 +44,7 @@ sub process_feed {
     @items = sort { $a->updated cmp $b->updated } @items; # ascending order
     my $newest = $items[-1];
     my $latest = $newest->updated;
+    $latest = $items[0]->updated if exists $ENV{TEST_RSS_PARSER};
 
     # skip the first run, to prevent new installs from flooding the channel
     if(defined($lastrev)) {

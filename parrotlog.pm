@@ -52,7 +52,8 @@ sub process_feed {
     my @items = @{$rss->items};
     @items = sort { $a->link cmp $b->link } @items; # ascending order
     my $newest = $items[-1];
-    my ($newestrev) = $newest->link =~ m|/changeset/(\d+)/|;
+    my ($newestrev) = $newest->link   =~ m|/changeset/(\d+)/|;
+    ($newestrev)    = $items[0]->link =~ m|/changeset/(\d+)/| if exists $ENV{TEST_RSS_PARSER};
 
     # skip the first run, to prevent new installs from flooding the channel
     if(defined($lastrev)) {
