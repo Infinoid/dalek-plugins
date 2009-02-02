@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use LWP::UserAgent;
 use XML::RAI;
-use DateTime::Format::RSS;
 use HTML::Entities;
 use WWW::Shorten::Metamark;
 use WWW::Shorten 'Metamark';
@@ -37,7 +36,6 @@ sub shutdown {
 my $lwp = LWP::UserAgent->new();
 $lwp->timeout(30);
 $lwp->env_proxy();
-my $dateparser = DateTime::Format::RSS->new;
 
 sub fetch_feed {
     my $response = $lwp->get($url);
