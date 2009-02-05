@@ -84,9 +84,16 @@ sub output_item {
     my ($rev)   = $link =~ /version=(\d+)/;
     my ($page)  = $link =~ m|/parrot/wiki/(.+)\?version=|;
 
-    put("tracwiki: v$rev | $creator++ | $page");
+    if(defined($rev)) {
+        main::lprint("parrotwikilog: output_item: output $page rev $rev");
+        put("tracwiki: v$rev | $creator++ | $page");
+    } else {
+        main::lprint("parrotwikilog: output_item: output unversioned item");
+        # unversioned update, just output the title as-is.
+        my $title = $item->title;
+        put("tracwiki: $creator++ | $title");
+    }
     put("tracwiki: $link");
-    main::lprint("parrotwikilog: output_item: output $page rev $rev");
 }
 
 sub put {
