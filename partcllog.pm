@@ -79,22 +79,25 @@ sub output_item {
     my ($rev)   = $link =~ m|\?r=([0-9]+)|;
     my $log;
     decode_entities($desc);
-    $desc =~ s/\xa0//g;
     $desc =~ s/^\s+//s;
     $desc =~ s/\s+$//s;
     $desc =~ s/<br\/>//g;
     my @lines = split("\n", $desc);
+    shift(@lines) if $lines[0] eq 'Changed Paths:';
     my @files;
-    while($lines[0] =~ /[^ ]/) {
-        if($lines[0] =~ m[(?:Modify|Add|Delete)/(.+)]) {
-            print("got a match $1\n");
+    while(defined($lines[0]) && $lines[0] =~ /[^ ]/) {
+        my $line = shift @lines;
+        if($line =~ m[\xa0\xa0\xa0\xa0(?:Modify|Add|Delete)\xa0\xa0\xa0\xa0/(.+)]) {
             push(@files, $1);
+        } else {
+            unshift(@lines, $line);
+            last;
         }
-        shift(@lines);
+        while(defined($lines[0]) && $lines[0] eq ' ') {
+            $line = shift @lines;
+        }
     }
-    return main::lprint("partcllog: error parsing filenames from description")
-        unless $lines[0] eq ' ';
-    pop(@lines)   while scalar(@lines) && $lines[-1] eq '';
+    pop(@lines) while scalar(@lines) && $lines[-1] eq '';
     $log = join("\n", @lines);
     $log =~ s/^\s+//;
 
