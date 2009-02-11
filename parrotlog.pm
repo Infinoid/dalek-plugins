@@ -60,10 +60,15 @@ sub process_feed {
         # output new entries to channel
         foreach my $item (@items) {
             my ($rev) = $item->link =~ m|/changeset/(\d+)/|;
-            output_item($item) if $rev > $lastrev;
+            if($rev > $lastrev) {
+                output_item($item);
+                $lastrev = $rev;
+                last;
+            }
         }
+    } else {
+        $lastrev = $newestrev;
     }
-    $lastrev = $newestrev;
     main::store_item($copy_of_self, "parrot_lastrev", $lastrev);
 }
 
