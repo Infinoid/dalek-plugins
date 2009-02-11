@@ -9,7 +9,7 @@ use WWW::Shorten 'Metamark';
 
 # Parse RSS generated from trac's "revision log" page.
 
-my $url  = 'http://trac.parrot.org/parrot/log/?limit=100&mode=stop_on_copy&format=rss';
+my $url  = 'http://trac.parrot.org/parrot/log/?limit=10&mode=stop_on_copy&format=rss';
 my $lastrev;
 my $copy_of_self;
 
@@ -34,7 +34,7 @@ sub shutdown {
 }
 
 my $lwp = LWP::UserAgent->new();
-$lwp->timeout(30);
+$lwp->timeout(60);
 $lwp->env_proxy();
 
 sub fetch_feed {
@@ -85,17 +85,17 @@ sub output_item {
 
     my ($rev)   = $link =~ m|/changeset/(\d+)/|;
     my $response = $lwp->get($link);
-    if(!$response->is_success) {
-        return main::lprint("parrotlog: could not fetch $link");
+    if($response->is_success) {
+        my $changeset_text = $response->content;
+        $changeset_text =~ s/<[^>]+>//g;
+        decode_entities($changeset_text);
+        $changeset_text =~ s/\s+/ /gs;
+        ($prefix) = $changeset_text =~ /Location: (\S+) /;
+        ($prefix) = $changeset_text =~ /Files: 1 \S+ (\S+) / unless defined $prefix;
+        $prefix = 'unknown' unless defined $prefix;
+    } else {
+        $prefix = 'failed to fetch changeset';
     }
-
-    my $changeset_text = $response->content;
-    $changeset_text =~ s/<[^>]+>//g;
-    decode_entities($changeset_text);
-    $changeset_text =~ s/\s+/ /gs;
-    ($prefix) = $changeset_text =~ /Location: (\S+) /;
-    ($prefix) = $changeset_text =~ /Files: 1 \S+ (\S+) / unless defined $prefix;
-    $prefix = 'unknown' unless defined $prefix;
 
     $desc =~ s/<[^>]+>//g;
     decode_entities($desc);
