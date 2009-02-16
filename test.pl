@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use lib "../..";
 
 $ENV{TEST_RSS_PARSER} = 1;
 
@@ -13,13 +14,11 @@ unless(defined($module) && -f $module) {
 do $module;
 $module =~ s/\.pm$//;
 $module = "modules::local::$module";
+my $inst = bless({}, $module);
 
 sub run_function {
-    undef $@;
     my $function = shift;
-    $function = $module."::".$function."();";
-    eval $function;
-    warn($@) if length $@;
+    $inst->$function();
 }
 
 run_function("init");
@@ -31,10 +30,15 @@ sub create_timer {
     run_function($functionname) for (0..1);
 }
 
+my $lastline;
 sub send_privmsg {
     my ($network, $channel, $line) = @_;
+    # module may output the same line to multiple channels; detect that here.
+    return if $line eq $lastline;
     print("CHANNEL: $line\n");
+    $lastline = $line;
 }
+
 sub lprint {
     my $line = shift;
     print("log: $line\n");
