@@ -1,4 +1,4 @@
-package modules::local::parrotwikilog;
+package modules::local::tracwikilog;
 use strict;
 use warnings;
 use LWP::UserAgent;
@@ -16,11 +16,11 @@ my $copy_of_self;
 sub init {
     my $self = shift;
     $copy_of_self = $self;
-    my $rev = main::get_item($self, "parrotwiki_lastrev");
+    my $rev = main::get_item($self, "tracwiki_lastrev");
     undef $rev unless length $rev;
     $lastrev = $rev if defined $rev;
-    main::lprint("parrotwikilog: init: initialized lastrev to $lastrev") if defined $lastrev;
-    main::create_timer("parrotwikilog_fetch_feed_timer", $self, "fetch_feed", 180);
+    main::lprint("tracwikilog: init: initialized lastrev to $lastrev") if defined $lastrev;
+    main::create_timer("tracwikilog_fetch_feed_timer", $self, "fetch_feed", 180);
 }
 
 sub implements {
@@ -29,8 +29,8 @@ sub implements {
 
 sub shutdown {
     my $self = shift;
-    main::delete_timer("parrotwikilog_fetch_feed_timer");
-    main::store_item($self, "parrotwiki_lastrev", $lastrev) if defined $lastrev;
+    main::delete_timer("tracwikilog_fetch_feed_timer");
+    main::store_item($self, "tracwiki_lastrev", $lastrev) if defined $lastrev;
 }
 
 my $lwp = LWP::UserAgent->new();
@@ -43,7 +43,7 @@ sub fetch_feed {
         my $feed = XML::RAI->parse_string($response->content);
         process_feed($feed);
     } else {
-        main::lprint("parrotwikilog: fetch_feed: failure fetching $url");
+        main::lprint("tracwikilog: fetch_feed: failure fetching $url");
     }
 }
 
@@ -64,7 +64,7 @@ sub process_feed {
         }
     }
     $lastrev = $date;
-    main::store_item($copy_of_self, "parrotwiki_lastrev", $lastrev);
+    main::store_item($copy_of_self, "tracwiki_lastrev", $lastrev);
 }
 
 sub longest_common_prefix {
@@ -85,10 +85,10 @@ sub output_item {
     my ($page)  = $link =~ m|/parrot/wiki/(.+)\?version=|;
 
     if(defined($rev)) {
-        main::lprint("parrotwikilog: output_item: output $page rev $rev");
+        main::lprint("tracwikilog: output_item: output $page rev $rev");
         put("tracwiki: v$rev | $creator++ | $page");
     } else {
-        main::lprint("parrotwikilog: output_item: output unversioned item");
+        main::lprint("tracwikilog: output_item: output unversioned item");
         # unversioned update, just output the title as-is.
         my $title = $item->title;
         put("tracwiki: $creator++ | $title");
