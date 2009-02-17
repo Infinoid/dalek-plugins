@@ -15,10 +15,7 @@ my $copy_of_self;
 sub init {
     my $self = shift;
     $copy_of_self = $self;
-    my $rev = main::get_item($self, "partcl_lastrev");
-    undef $rev unless length $rev;
-    $lastrev = $rev if defined $rev;
-    main::lprint("partcllog: init: initialized lastrev to $lastrev") if defined $lastrev;
+    main::lprint("partcl googlecode ATOM parser loaded.");
     main::create_timer("partcllog_fetch_feed_timer", $self, "fetch_feed", 180);
 }
 
@@ -29,7 +26,6 @@ sub implements {
 sub shutdown {
     my $self = shift;
     main::delete_timer("partcllog_fetch_feed_timer");
-    main::store_item($self, "partcl_lastrev", $lastrev) if defined $lastrev;
 }
 
 sub fetch_feed {
@@ -55,7 +51,6 @@ sub process_feed {
         }
     }
     $lastrev = $latest;
-    main::store_item($copy_of_self, "rakudo_lastrev", $lastrev);
 }
 
 sub longest_common_prefix {

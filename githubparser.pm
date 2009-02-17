@@ -14,12 +14,8 @@ sub init {
     my $self = shift;
     my $package_name = $$self{modulename};
     my $feed_name    = $$self{feed_name};
-    $$self{var_name} = $$self{lastrev_var_name};
-    $$self{var_name} = $$self{feed_name}."_lastvar" unless defined $$self{lastrev_var_name};
-    my $rev          = main::get_item($self, $$self{var_name});
-    undef $rev         unless length $rev;
-    $$self{lastrev}  = $rev if defined $rev;
     $objects_by_package{$package_name} = $self;
+    main::lprint("$feed_name github ATOM parser loaded.");
     main::create_timer($feed_name."_fetch_feed_timer", $$self{modulename},
         "fetch_feed", 180 + $feed_number++);
 }
@@ -32,8 +28,6 @@ sub shutdown {
     my $pkg = shift;
     my $self = $objects_by_package{$pkg};
     main::delete_timer($$self{feed_name}."_fetch_feed_timer");
-    main::store_item($self, $$self{var_name}, $$self{lastrev})
-        if defined $$self{lastrev};
 }
 
 sub fetch_feed {
@@ -61,7 +55,6 @@ sub process_feed {
         }
     }
     $$self{lastrev} = $latest;
-    main::store_item($$self{modulename}, $$self{var_name}, $$self{lastrev});
 }
 
 sub longest_common_prefix {

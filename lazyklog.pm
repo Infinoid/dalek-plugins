@@ -9,10 +9,9 @@ my $url = 'http://github.com/feeds/bschmalhofer/commits/lazy-k/master';
 sub init {
     my $self = shift;
     $self = bless({modulename => $self}, $self) unless ref($self);
-    $$self{url}              = $url;
-    $$self{feed_name}        = 'lazy-k';
-    $$self{lastrev_var_name} = 'lazyk_lastrev';
-    $$self{targets}          = [
+    $$self{url}       = $url;
+    $$self{feed_name} = 'lazy-k';
+    $$self{targets}   = [
         [ "magnet", "#parrot" ],
     ];
     my $initfunc = $self->super('init');

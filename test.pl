@@ -23,8 +23,6 @@ sub run_function {
 
 run_function("init");
 
-sub get_item { "" }
-sub store_item {}
 sub create_timer {
     my ($timername, $self, $functionname, $timeout) = @_;
     run_function($functionname) for (0..1);

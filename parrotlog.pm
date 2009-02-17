@@ -16,10 +16,7 @@ my $copy_of_self;
 sub init {
     my $self = shift;
     $copy_of_self = $self;
-    my $rev = main::get_item($self, "parrot_lastrev");
-    undef $rev unless length $rev;
-    $lastrev = $rev if defined $rev;
-    main::lprint("parrotlog: init: initialized lastrev to $lastrev") if defined $lastrev;
+    main::lprint("parrot trac RSS parser loaded.");
     main::create_timer("parrotlog_fetch_feed_timer", $self, "fetch_feed", 180);
 }
 
@@ -30,7 +27,6 @@ sub implements {
 sub shutdown {
     my $self = shift;
     main::delete_timer("parrotlog_fetch_feed_timer");
-    main::store_item($self, "parrot_lastrev", $lastrev) if defined $lastrev;
 }
 
 my $lwp = LWP::UserAgent->new();
@@ -69,7 +65,6 @@ sub process_feed {
     } else {
         $lastrev = $newestrev;
     }
-    main::store_item($copy_of_self, "parrot_lastrev", $lastrev);
 }
 
 sub longest_common_prefix {

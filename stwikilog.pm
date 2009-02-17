@@ -27,7 +27,6 @@ sub numify_ts {
 sub shutdown {
     my $self = shift;
     main::delete_timer("stwikilog_fetch_rss_timer");
-    main::store_item($self, "lastpost", $lastpost) if defined $lastpost;
 }
 
 my $lwp = LWP::UserAgent->new();
