@@ -79,8 +79,8 @@ sub longest_common_prefix {
 sub output_item {
     my $item = shift;
     my $creator = $item->creator;
-    my $link    = $item->link;
-    my $desc    = $item->title;
+    my $link    = $item->link . "&action=diff";
+    my ($desc)  = $item->description =~ m|<p>\s*(.*?)\s*</p>|s;
     my ($rev)   = $link =~ /version=(\d+)/;
     my ($page)  = $link =~ m|/parrot/wiki/(.+)\?version=|;
 
@@ -92,6 +92,10 @@ sub output_item {
         # unversioned update, just output the title as-is.
         my $title = $item->title;
         put("tracwiki: $creator++ | $title");
+    }
+    if (defined($desc)) {
+        $desc =~ s/<.*?>//;
+        put("tracwiki: $desc") if ($desc ne "");
     }
     put("tracwiki: $link");
 }
