@@ -4,7 +4,7 @@ use warnings;
 use SUPER;
 use base qw(modules::local::githubparser);
 
-my $url = 'http://github.com/feeds/tene/commits/gil/master';
+my $url = 'http://github.com/feeds/fperrad/commits/gil/master';
 
 sub init {
     my $self = shift;
