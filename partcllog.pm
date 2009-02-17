@@ -19,7 +19,7 @@ sub init {
     undef $rev unless length $rev;
     $lastrev = $rev if defined $rev;
     main::lprint("partcllog: init: initialized lastrev to $lastrev") if defined $lastrev;
-    main::create_timer("partcllog_fetch_feed_timer", $self, "fetch_feed", 30);
+    main::create_timer("partcllog_fetch_feed_timer", $self, "fetch_feed", 180);
 }
 
 sub implements {

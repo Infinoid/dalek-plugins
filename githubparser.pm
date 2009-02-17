@@ -24,7 +24,7 @@ sub init {
     undef $rev unless length $rev;
     $lastrev = $rev if defined $rev;
     main::lprint("$module_name: init: initialized lastrev to $lastrev") if defined $lastrev;
-    main::create_timer($module_name."_fetch_feed_timer", $$self{modulename}, "fetch_feed", 30);
+    main::create_timer($module_name."_fetch_feed_timer", $$self{modulename}, "fetch_feed", 180);
 }
 
 sub implements {

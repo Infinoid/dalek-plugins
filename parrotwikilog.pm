@@ -20,7 +20,7 @@ sub init {
     undef $rev unless length $rev;
     $lastrev = $rev if defined $rev;
     main::lprint("parrotwikilog: init: initialized lastrev to $lastrev") if defined $lastrev;
-    main::create_timer("parrotwikilog_fetch_feed_timer", $self, "fetch_feed", 30);
+    main::create_timer("parrotwikilog_fetch_feed_timer", $self, "fetch_feed", 180);
 }
 
 sub implements {
