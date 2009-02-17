@@ -10,7 +10,7 @@ sub init {
     my $self = shift;
     $self = bless({modulename => $self}, $self) unless ref($self);
     $$self{url}              = $url;
-    $$self{module_name}      = 'lazy-k';
+    $$self{feed_name}        = 'lazy-k';
     $$self{lastrev_var_name} = 'lazyk_lastrev';
     $$self{targets}          = [
         [ "magnet", "#parrot" ],

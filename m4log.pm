@@ -9,9 +9,9 @@ my $url = 'http://github.com/feeds/bschmalhofer/commits/m4/master';
 sub init {
     my $self = shift;
     $self = bless({modulename => $self}, $self) unless ref($self);
-    $$self{url}              = $url;
-    $$self{module_name}      = 'm4';
-    $$self{targets}          = [
+    $$self{url}       = $url;
+    $$self{feed_name} = 'm4';
+    $$self{targets}   = [
         [ "magnet", "#parrot" ],
     ];
     my $initfunc = $self->super('init');

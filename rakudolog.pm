@@ -9,9 +9,9 @@ my $url = 'http://github.com/feeds/rakudo/commits/rakudo/master';
 sub init {
     my $self = shift;
     $self = bless({modulename => $self}, $self) unless ref($self);
-    $$self{url}              = $url;
-    $$self{module_name}      = 'rakudo';
-    $$self{targets}          = [
+    $$self{url}       = $url;
+    $$self{feed_name} = 'rakudo';
+    $$self{targets}   = [
         [ "magnet",   "#parrot" ],
         [ "freenode", "#perl6"  ],
     ];

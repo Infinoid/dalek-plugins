@@ -14,7 +14,7 @@ unless(defined($module) && -f $module) {
 do $module;
 $module =~ s/\.pm$//;
 $module = "modules::local::$module";
-my $inst = bless({}, $module);
+my $inst = $module;
 
 sub run_function {
     my $function = shift;

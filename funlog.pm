@@ -9,9 +9,9 @@ my $url = 'http://github.com/feeds/TiMBuS/commits/fun/master';
 sub init {
     my $self = shift;
     $self = bless({modulename => $self}, $self) unless ref($self);
-    $$self{url}              = $url;
-    $$self{module_name}      = 'fun';
-    $$self{targets}          = [
+    $$self{url}       = $url;
+    $$self{feed_name} = 'fun';
+    $$self{targets}   = [
         [ "magnet", "#parrot" ],
     ];
     my $initfunc = $self->super('init');

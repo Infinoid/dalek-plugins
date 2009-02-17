@@ -9,9 +9,9 @@ my $url = 'http://github.com/feeds/chrisdolan/commits/perk/master';
 sub init {
     my $self = shift;
     $self = bless({modulename => $self}, $self) unless ref($self);
-    $$self{url}              = $url;
-    $$self{module_name}      = 'perk';
-    $$self{targets}          = [
+    $$self{url}       = $url;
+    $$self{feed_name} = 'perk';
+    $$self{targets}   = [
         [ "magnet", "#parrot" ],
     ];
     my $initfunc = $self->super('init');
