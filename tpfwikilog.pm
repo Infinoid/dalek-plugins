@@ -1,4 +1,4 @@
-package modules::local::stwikilog;
+package modules::local::tpfwikilog;
 use strict;
 use warnings;
 use LWP::UserAgent;
@@ -11,7 +11,7 @@ my $lastpost;
 
 sub init {
     my $self = shift;
-    main::create_timer("stwikilog_fetch_rss_timer", $self, "fetch_rss", 175);
+    main::create_timer("tpfwikilog_fetch_rss_timer", $self, "fetch_feed", 175);
 }
 
 sub implements {
@@ -26,29 +26,30 @@ sub numify_ts {
 
 sub shutdown {
     my $self = shift;
-    main::delete_timer("stwikilog_fetch_rss_timer");
+    main::delete_timer("tpfwikilog_fetch_rss_timer");
 }
 
 my $lwp = LWP::UserAgent->new();
 $lwp->timeout(10);
 $lwp->env_proxy();
 
-sub fetch_rss {
+sub fetch_feed {
     my $response = $lwp->get($url);
     if($response->is_success) {
         my $rss = XML::RAI->parse_string($response->content);
-        process_rss($rss);
+        process_feed($rss);
     } else {
-        main::lprint("stwikilog: fetch_rss: failure fetching $url");
+        main::lprint("tpfwikilog: fetch_rss: failure fetching $url");
     }
 }
 
-sub process_rss {
+sub process_feed {
     my $rss = shift;
     my @items = @{$rss->items};
     my $newest = $items[0];
+    $newest    = $items[-1] if exists $ENV{TEST_RSS_PARSER};
     my $newestpost = numify_ts($newest->created);
-    #main::lprint("stwikilog: newepost is $newestpost");
+    #main::lprint("tpfwikilog: newepost is $newestpost");
     my @newposts;
     
     # skip the first run, to prevent new installs from flooding the channel
@@ -56,8 +57,6 @@ sub process_rss {
         # output new entries to channel
         foreach my $item (@items) {
             my ($post) = numify_ts($item->created);
-            #main::lprint("stwikilog:     post is $post");
-	    #main::lprint("stwikilog: lastpost is $lastpost\n");
 	    last if $post <= $lastpost;
 	    unshift(@newposts,$item);
         }
@@ -71,8 +70,8 @@ sub output_item {
     my $creator = $item->creator;
     my $link    = $item->link;
     my $title   = $item->title;
-    put("$creator | $title:");
-    put("link: $link");
+    put("tpfwiki: $creator | $title");
+    put("tpfwiki: $link");
 }
 
 sub put {
