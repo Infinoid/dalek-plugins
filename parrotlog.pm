@@ -91,8 +91,15 @@ sub output_item {
         decode_entities($changeset_text);
         $changeset_text =~ s/\s+/ /gs;
         ($prefix) = $changeset_text =~ /Location: (\S+) /;
-        ($prefix) = $changeset_text =~ /Files: 1 \S+ (\S+) / unless defined $prefix;
-        $prefix = 'unknown' unless defined $prefix;
+        if (defined($prefix)) {
+            my @add = $changeset_text =~ /Files:(?: (\d+) added)?(?: (\d+) removed)?(?: (\d+) modified)?/;
+            my $count = 0;
+            map { $count += $add[$_] if defined $add[$_] } (0..2);
+            $prefix .= " ($count files)";
+        } else {
+            ($prefix) = $changeset_text =~ /Files: 1 \S+ (\S+) /;
+            $prefix = 'unknown' unless defined $prefix;
+        }
     } else {
         $prefix = 'failed to fetch changeset';
     }
