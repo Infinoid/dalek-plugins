@@ -32,7 +32,9 @@ my $lastline;
 sub send_privmsg {
     my ($network, $channel, $line) = @_;
     # module may output the same line to multiple channels; detect that here.
-    return if $line eq $lastline;
+    if(defined($lastline) && ($line eq $lastline)) {
+        return;
+    }
     print("CHANNEL: $line\n");
     $lastline = $line;
 }
