@@ -59,7 +59,6 @@ sub process_feed {
             if($rev > $lastrev) {
                 output_item($item);
                 $lastrev = $rev;
-                last;
             }
         }
     } else {
