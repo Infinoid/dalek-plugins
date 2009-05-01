@@ -1,0 +1,24 @@
+=head1 DESCRIPTION
+
+This is the dalek-plugins repo.  It's where I hack on the RSS feed plugins
+running on "dalek", a bot in #parrot on the MagNET IRC network (irc.perl.org).
+
+The bot is running the "botnix" software.  These are botnix plugins, written
+in Perl.  They register a timer callback, which polls RSS feeds and creates
+channel output as necessary.
+
+=head1 RAISON D'ÊTRE
+
+Parrot is quickly spreading out, and all of a sudden there are lots of source
+control repositories to keep up with.  But we still want to see all of these
+awesome things happening, regardless of where the commit went.  To do this, we
+need to track lots of RSS and ATOM feeds.  We also track feeds from a couple of
+parrot-related wikis.
+
+=head1 IMPLEMENTATION
+
+Fortunately, the servers providing these feeds are generally only running one of
+a very few software packages, e.g. trac, github, googlecode, or svnweb.  Thus,
+we only really need one parser per server software type, and the actual plugins
+can be simple subclasses which just specify the feed location and repo name.  
+This is already done, at least for github.  Others are on the way.
