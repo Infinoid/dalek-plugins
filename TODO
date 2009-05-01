@@ -1,0 +1,20 @@
+* Fix rakudolog (For some reason it isn't outputting anything)
+
+* Flesh out the testsuite
+
+* Trac converts "..." to a unicode ellipsis, which crashes parrotlog
+
+* Commonize the googlecode plugin
+
+* Add googlecode atom plugins for:
+  * parrot-jvm
+  * parrotjs
+  * matrixy
+
+* Add a common base class to handle username variations
+  * Auto-update the username variations hourly from Parrot's CREDITS file
+
+* Auto-update the feeds list from the Languages page on the wiki
+  * Add the necessary metadata to Languages to make this possible, of course.
+
+* Commonize the trac plugin, it'll be useful eventually
