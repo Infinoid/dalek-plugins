@@ -1,6 +1,0 @@
-Split googlecode parser from partcl plugin into a base plugin for code reuse.
-
-Add googlecode atom plugins for:
-parrot-jvm
-parrotjs
-matrixy

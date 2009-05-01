@@ -10,6 +10,11 @@ my $feed_number = 1;
 
 my %objects_by_package;
 
+sub get_self {
+    my $pkg = shift;
+    return $objects_by_package{$pkg};
+}
+
 sub init {
     my $self = shift;
     my $package_name = $$self{modulename};
@@ -35,16 +40,16 @@ sub fetch_feed {
     my $self = $objects_by_package{$pkg};
     my $atom = XML::Atom::Client->new();
     my $feed = $atom->getFeed($$self{url});
-    $self->process_feed($feed);
+    $pkg->process_feed($feed);
 }
 
 sub process_feed {
-    my ($self, $feed) = @_;
+    my ($pkg, $feed) = @_;
+    my $self = $objects_by_package{$pkg};
     my @items = $feed->entries;
     @items = sort { $a->updated cmp $b->updated } @items; # ascending order
     my $newest = $items[-1];
     my $latest = $newest->updated;
-    $latest = $items[0]->updated if exists $ENV{TEST_RSS_PARSER};
 
     # skip the first run, to prevent new installs from flooding the channel
     if(defined($$self{lastrev})) {
@@ -103,6 +108,7 @@ sub output_item {
     $log = join("\n", @lines);
 
     $prefix =  longest_common_prefix(@files);
+    $prefix //= '/';
     $prefix =~ s|^/||;      # cut off the leading slash
     if(scalar @files > 1) {
         $prefix .= " (" . scalar(@files) . " files)";
