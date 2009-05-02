@@ -11,7 +11,7 @@ use base 'modules::local::githubparser';
 
 =head1 DESCRIPTION
 
-This is a subclass of modules::local::rakudolog.  It adds a parser to emit
+This is a subclass of modules::local::githubparser.  It adds a parser to emit
 rakudo commits.
 
 Normally rakudo commits are configured automatically by

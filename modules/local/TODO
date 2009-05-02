@@ -1,9 +1,9 @@
 * Flesh out the testsuite
 
-* Trac converts "..." to a unicode ellipsis, which crashes parrotlog
-
 * Add a common base class to handle username variations
   * Auto-update the username variations hourly from Parrot's CREDITS file
+
+* Trac converts "..." to a unicode ellipsis, which crashes parrotlog
 
 * Commonize the trac plugin, it'll be useful eventually
 

@@ -55,11 +55,13 @@ relevant.
 
 Note, this is not currently doing an XML search, it is doing a substring search.
 I could break it down into a hash tree using XML::TreePP and then enumerate
-the rows in  $$ref{html}{body}{div}[2]{div}[1]{div}{table}, but the result would
+the rows in $$ref{html}{body}{div}[2]{div}[1]{div}{table}, but the result would
 be brittle and would break if anyone added another paragraph before the table,
-or changed the trac theme.  If anyone else knows a way to search for a data
-pattern at dynamic locations in the xml tree, please feel free to replace this
-code.
+or changed the trac theme.
+
+If anyone else knows a way to search for a data pattern at dynamic locations in
+the xml tree, please feel free to replace this code.  It's not very big, I
+promise.
 
 =cut
 

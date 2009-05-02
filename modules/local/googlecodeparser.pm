@@ -113,10 +113,7 @@ sub longest_common_prefix {
 
 This is called by autofeed.pm.  Given a google code URL, try to determine the
 project name and canonical path.  Then configure a feed reader for it if one
-doesn't already exist.  Note that this duplicates a little bit of code with
-the "init" method; they are alternate entry points to set up github parsers.
-The "init" method is the manual control method; try_link is the automatic one
-and is smarter about feed collisions and such.
+doesn't already exist.
 
 The array reference containing network and channel are optional.  If not
 specified, magnet/#parrot is assumed.  If the feed already exists but didn't
