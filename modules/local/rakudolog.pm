@@ -37,16 +37,4 @@ sub init {
     modules::local::githubparser->try_link($url, ['freenode', '#perl6']);
 }
 
-
-=head2 implements
-
-This is a pseudo-method called by botnix to determine which event callbacks
-this module supports.  Returns an empty array.
-
-=cut
-
-sub implements {
-    return qw();
-}
-
 1;
