@@ -8,6 +8,7 @@ use lib getcwd();
 use t::util;
 
 # this configures the partcl feed, among others.
+load_plugin("karmalog");
 load_plugin("autofeed");
 
 my $tests;
@@ -88,7 +89,7 @@ $output = [output()];
 is(scalar @$output, 3, "3 lines of output");
 is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
 is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
-is($$output[0]{text}, 'partcl: r322 | wcoleda++ | trunk/runtime/builtin/array.pir:' , "karma line");
+is($$output[0]{text}, 'partcl: r322 | coke++ | trunk/runtime/builtin/array.pir:' , "karma line");
 is($$output[1]{text}, 'partcl: [array unset a] should unset the entire array, not all the array\'s contents.' , "log line");
 is($$output[2]{text}, 'partcl: review: http://code.google.com/p/partcl/source/detail?r=322' , "link line");
 is($$rl{lastrev}, "2009-01-27T15:44:28Z", "lastrev was updated");

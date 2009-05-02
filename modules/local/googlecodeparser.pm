@@ -5,6 +5,8 @@ use warnings;
 use XML::Atom::Client;
 use HTML::Entities;
 
+use base 'modules::local::karmalog';
+
 =head1 NAME
 
     modules::local::googlecodeparser
@@ -233,11 +235,15 @@ sub output_item {
     decode_entities($log);
     my @log_lines = split(/[\r\n]+/, $log);
 
-    $self->put($$self{feed_name}.": r$rev | $creator++ | $prefix:");
-    foreach my $line (@log_lines) {
-        $self->put($$self{feed_name}.": $line");
-    }
-    $self->put($$self{feed_name}.": review: $link");
+    $self->emit_karma_message(
+        feed    => $$self{feed_name},
+        rev     => "r$rev",
+        user    => $creator,
+        log     => \@log_lines,
+        link    => $link,
+        prefix  => $prefix,
+        targets => $$self{targets},
+    );
     main::lprint($$self{feed_name}.": output_item: output rev $rev");
 }
 
@@ -245,27 +251,13 @@ sub output_item {
 =head2 implements
 
 This is a pseudo-method called by botnix to determine which event callbacks
-this module supports.  Returns an empty array.
+this module supports.  It is only called when explicitly subclassed (rakudo
+does this).  Returns an empty array.
 
 =cut
 
 sub implements {
     return qw();
-}
-
-
-=head2 shutdown
-
-This is a pseudo-method called when botnix is shutting down.  Note in most
-cases this doesn't seem to actually get called, so don't rely on anything in
-here actually happening.
-
-=cut
-
-sub shutdown {
-    my $pkg = shift;
-    my $self = $objects_by_package{$pkg};
-    main::delete_timer($$self{feed_name}."_fetch_feed_timer");
 }
 
 
@@ -279,25 +271,6 @@ It isn't used in production.
 sub get_self {
     my $pkg = shift;
     return $objects_by_package{$pkg};
-}
-
-
-=head2 put
-
-    $self->put($line);
-
-Output a line of text to the list of targets configured in the $self object.
-
-This is temporary code; it needs to be moved into a superclass with a smarter
-API, specifically one that understands username aliases.
-
-=cut
-
-sub put {
-    my ($self, $line) = @_;
-    foreach my $target (@{$$self{targets}}) {
-        main::send_privmsg(@$target, $line);
-    }
 }
 
 1;
