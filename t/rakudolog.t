@@ -6,6 +6,10 @@ use Test::More;
 use Cwd;
 use lib getcwd();
 use t::util;
+
+# note: the order these are loaded in determine the order of the target channels,
+# and thus, the tests below depend on this ordering.
+load_plugin("autofeed");
 load_plugin("rakudolog");
 
 my $tests;
