@@ -41,7 +41,7 @@ starts the ball rolling.  This method has two effects:
 sub init {
     my $self = shift;
     $self->scrape_languages_page();
-    main::create_timer('scrape', $self, 'scrape_languages_page', 60*60*4);
+    main::create_timer('scrape_Languages', $self, 'scrape_languages_page', 60*60*4);
 }
 
 
