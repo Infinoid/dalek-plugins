@@ -211,8 +211,6 @@ sub output_item {
         $desc = '(no commit message)';
     }
 
-    $creator = "($creator)" if($creator =~ /\s/);
-
     my ($rev)   = $link =~ m|/commit/([a-z0-9]{40})|;
     my ($log, $files);
     $desc =~ s/^.*<pre>//;
