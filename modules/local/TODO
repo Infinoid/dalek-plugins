@@ -1,10 +1,7 @@
-* Flesh out the testsuite
-
-* Add a common base class to handle username variations
-  * Auto-update the username variations hourly from Parrot's CREDITS file
+* Flesh out the testsuite, bring coverage up to 100%
 
 * Trac converts "..." to a unicode ellipsis, which crashes parrotlog
 
-* Commonize the trac plugin, it'll be useful eventually
+* Commonize the trac plugin, make sure it autodetects the "parrot" and "languages" repos
 
 * Add a common parser for bitbucket (hg), the shakespeare HLL uses it
