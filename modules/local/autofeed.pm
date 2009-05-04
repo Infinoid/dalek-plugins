@@ -68,6 +68,7 @@ promise.
 sub scrape_languages_page {
     my $package = shift;
     my $content = $package->fetch_url($url);
+    return unless defined $content;
     # this is nasty but straight-forward.
     my @links = split(/<tr[^>]*><td[^>]*><a(?: class=\S+) href="/, $content);
     shift @links;
