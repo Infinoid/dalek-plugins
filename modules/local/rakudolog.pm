@@ -1,7 +1,6 @@
 package modules::local::rakudolog;
 use strict;
 use warnings;
-use SUPER;
 use base 'modules::local::githubparser';
 
 
