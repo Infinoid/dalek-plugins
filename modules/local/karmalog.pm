@@ -61,7 +61,7 @@ Grab the CREDITS file, call parse_credits() with the result.
 sub scrape_credits {
     my $package = shift;
     my $credits = $package->fetch_url($url);
-    $package->parse_credits($credits);
+    $package->parse_credits($credits) if defined $credits;
 }
 
 
