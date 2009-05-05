@@ -14,6 +14,7 @@ unless(defined($module) && -f $module) {
 do $module;
 $module =~ s/\.pm$//;
 $module = "modules::local::$module";
+$module =~ s/-/_/g;
 my $inst = $module;
 
 my $output_anything = 0;

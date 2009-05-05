@@ -146,6 +146,7 @@ sub try_link {
 
     my $parsername = $projectname . "log";
     my $modulename = "modules::local::" . $parsername;
+    $modulename =~ s/-/_/g;
     if(exists($objects_by_package{$modulename})) {
         # extend existing feed if necessary
         my $self = $objects_by_package{$modulename};
@@ -169,7 +170,7 @@ sub try_link {
     };
     # create a dynamic subclass to get the timer callback back to us
     eval "package $modulename; use base 'modules::local::googlecodeparser';";
-    $objects_by_package{"modules::local::$parsername"} = bless($self, $modulename);
+    $objects_by_package{$modulename} = bless($self, $modulename);
     main::lprint("$parsername google code ATOM parser autoloaded.");
     main::create_timer($parsername."_fetch_feed_timer", $modulename,
         "fetch_feed", 260 + $feed_number++);
