@@ -243,7 +243,7 @@ sub output_item {
 
     $self->emit_karma_message(
         feed    => $$self{feed_name},
-        rev     => "r$rev",
+        rev     => $rev,
         user    => $creator,
         log     => \@log_lines,
         link    => $link,
