@@ -119,6 +119,7 @@ sub parse_credits {
             }
         }
     }
+    main::lprint("karmalog: aliases file parsed, " . scalar(keys %newaliases) . " aliases total");
     %aliases = %newaliases;
 }
 
