@@ -57,16 +57,13 @@ sub fetch_feed {
 
     $self->process_feed($feed);
 
-Enumerates the commits in the feed, emitting any events which are newer than
-the previously saved "lastval" (which is stashed in the $self object).
-output_item() is called for any objects it determines to be new.  It judges
-this by the datestamp, which is in a format that allows asciibetical inequality
-comparisons.  After enumerating the list, lastval is updated to the newest item
-in the feed.
+Enumerates the commits in the feed, emitting any events it hasn't seen before.
+This subroutine manages a "seen" cache in $self, and will take care not to
+announce any commit more than once.
 
 The first time through, nothing is emitted.  This is because we assume the bot
 was just restarted ungracefully and the users have already seen all the old
-events.
+events.  So it just populates the seen-cache silently.
 
 =cut
 
@@ -79,14 +76,19 @@ sub process_feed {
     my $latest = $newest->updated;
 
     # skip the first run, to prevent new installs from flooding the channel
-    if(defined($$self{lastrev})) {
-        # output new entries to channel
-        foreach my $item (@items) {
-            my $updated = $item->updated;
-            $self->output_item($item) if $updated gt $$self{lastrev};
+    foreach my $item (@items) {
+        my $link    = $item->link->href;
+        my ($rev)   = $link =~ m|/commit/([a-z0-9]{40})|;
+        if(exists($$self{not_first_time})) {
+            # output new entries to channel
+            next if exists($$self{seen}{$rev});
+            $$self{seen}{$rev} = 1;
+            $self->output_item($item, $link, $rev);
+        } else {
+            $$self{seen}{$rev} = 1;
         }
     }
-    $$self{lastrev} = $latest;
+    $$self{not_first_time} = 1;
 }
 
 
@@ -182,7 +184,7 @@ sub try_link {
 
 =head2 output_item
 
-    $self->output_item($item);
+    $self->output_item($item, $link, $revision);
 
 Takes an XML::Atom::Entry object, extracts the useful bits from it and calls
 put() to emit the karma message.
@@ -196,7 +198,7 @@ feedname: review: http://link/to/github/diff/page
 =cut
 
 sub output_item {
-    my ($self, $item) = @_;
+    my ($self, $item, $link, $rev) = @_;
     my $prefix  = 'unknown';
     my $creator = $item->author;
     if(defined($creator)) {
@@ -204,7 +206,6 @@ sub output_item {
     } else {
         $creator = 'unknown';
     }
-    my $link    = $item->link->href;
     my $desc    = $item->content;
     if(defined($desc)) {
         $desc = $desc->body;
@@ -212,13 +213,12 @@ sub output_item {
         $desc = '(no commit message)';
     }
 
-    my ($rev)   = $link =~ m|/commit/([a-z0-9]{40})|;
     my ($log, $files);
     $desc =~ s/^.*<pre>//;
     $desc =~ s/<\/pre>.*$//;
     my @lines = split("\n", $desc);
     my @files;
-    while($lines[0] =~ /^m (.+)/) {
+    while($lines[0] =~ /^[+m-] (.+)/) {
         push(@files, $1);
         shift(@lines);
     }

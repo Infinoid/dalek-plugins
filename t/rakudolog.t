@@ -49,10 +49,11 @@ ok(!exists($$rl{lastrev}), "no lastrev by default");
 call_func('process_feed', $feed);
 my $output = [output()];
 is(scalar @$output, 0, "nothing output the first time around");
-is($$rl{lastrev}, "2009-05-01T09:32:55-07:00", "lastrev was set");
+is($$rl{not_first_time}, 1, "not_first_time was set");
 BEGIN { $tests += 3 };
 
 # update
+reset_output();
 $xml_footer = << '__XML__' . $xml_footer;
   <entry>
     <id>tag:github.com,2008:Grit::Commit/7f5af50c19baf360dacc5779b9c013fb14db34d3</id>
@@ -82,5 +83,48 @@ is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
 is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
 is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
 is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
-is($$rl{lastrev}, "2009-05-01T09:58:40-07:00", "lastrev was updated");
-BEGIN { $tests += 6 };
+BEGIN { $tests += 5 };
+
+# update with multiple commits having the same timestamp
+reset_output();
+$xml_footer = << '__XML__' . $xml_footer;
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/5bd02be9924c2f6013e4601e55d103b1e1a30a14</id>
+    <link type="text/html" rel="alternate" href="http://github.com/rakudo/rakudo/commit/5bd02be9924c2f6013e4601e55d103b1e1a30a14"/>
+    <title>Small optimizations to signature binding; costs us a PMC creation and a method call less every invocation of something that has a signature, which gives a 7% speed-up in a calling benchmark.</title>
+    <updated>2009-05-15T06:45:18-07:00</updated>
+    <content type="html">&lt;pre&gt;m src/classes/Signature.pir
+
+Small optimizations to signature binding; costs us a PMC creation and a method call less every invocation of something that has a signature, which gives a 7% speed-up in a calling benchmark.&lt;/pre&gt;</content>
+    <author>
+      <name>jnthn</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/b49cce1a84c1f229d1c542c2dc2556e2912aa960</id>
+    <link type="text/html" rel="alternate" href="http://github.com/rakudo/rakudo/commit/b49cce1a84c1f229d1c542c2dc2556e2912aa960"/>
+    <title>Add some micro-benchmakrs.</title>
+    <updated>2009-05-15T06:45:18-07:00</updated>
+    <content type="html">&lt;pre&gt;+ tools/benchmark.pl
+
+Add some micro-benchmakrs.&lt;/pre&gt;</content>
+    <author>
+      <name>jnthn</name>
+    </author>
+  </entry>
+__XML__
+$xml = $xml_header . '<updated>2009-05-15T06:45:18-07:00</updated>' . $xml_footer;
+$feed = XML::Atom::Feed->new(\$xml);
+call_func('process_feed', $feed);
+$output = [output()];
+is(scalar @$output, 12, "12 lines of output");
+is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
+is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
+is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
+is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
+# The module sorts by <updated> time, but the time is the same for these two commits.
+# Do it this way so we don't depend on perl's internal sort algorithm details.
+my @message_list = ($$output[2]{text}, $$output[8]{text});
+is(scalar grep(/Small optimizations/ , @message_list), 1, "log message");
+is(scalar grep(/Add some micro-bench/, @message_list), 1, "log message");
+BEGIN { $tests += 7 };
