@@ -204,9 +204,9 @@ sub output_item {
     my ($rev)   = $link =~ m|\?r=([0-9]+)|;
     my $log;
     decode_entities($desc);
-    $desc =~ s/^\s+//s;
-    $desc =~ s/\s+$//s;
-    $desc =~ s/<br\/>//g;
+    $desc =~ s/^\s+//s;   # leading whitespace
+    $desc =~ s/\s+$//s;   # trailing whitespace
+    $desc =~ s/<br\/>//g; # encapsulated newlines
     my @lines = split("\n", $desc);
     shift(@lines) if $lines[0] eq 'Changed Paths:';
     my @files;
@@ -214,6 +214,9 @@ sub output_item {
         my $line = shift @lines;
         if($line =~ m[\xa0\xa0\xa0\xa0(?:Modify|Add|Delete)\xa0\xa0\xa0\xa0/(.+)]) {
             push(@files, $1);
+        } elsif($line =~ m[^ \(from /]) {
+            # skip this line and the one after it.
+            shift(@lines);
         } else {
             unshift(@lines, $line);
             last;

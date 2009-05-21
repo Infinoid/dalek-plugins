@@ -7,7 +7,9 @@ use Cwd;
 use lib getcwd();
 use t::util;
 
-# this configures the partcl feed, among others.
+# this configures the partcl feed, among others.  We use the partcl feed as an
+# entry point to the googlecode parser, even though some of the test logs
+# were taken from other projects.
 load_plugin("karmalog");
 load_plugin("autofeed");
 
@@ -94,3 +96,42 @@ is($$output[1]{text}, 'partcl: [array unset a] should unset the entire array, no
 is($$output[2]{text}, 'partcl: review: http://code.google.com/p/partcl/source/detail?r=322' , "link line");
 is($$rl{lastrev}, "2009-01-27T15:44:28Z", "lastrev was updated");
 BEGIN { $tests += 7 };
+
+reset_output();
+# update
+$xml_footer = << '__XML__' . $xml_footer;
+  <entry>
+ <updated>2009-05-18T22:46:21Z</updated>
+ <id>http://code.google.com/feeds/p/porcupinepascal/svnchanges/basic/70</id>
+ <link rel="alternate" type="text/html"
+ href="http://code.google.com/p/porcupinepascal/source/detail?r=70" />
+ <title>Revision 70: renamed to test of standard functions</title>
+ <author>
+ <name>robin.ge</name>
+ </author>
+ <content type="html">
+ Changed Paths:&lt;br/&gt;
+ &#160;&#160;&#160;&#160;Delete&#160;&#160;&#160;&#160;/branches/oo-branch/t/12-case.t
+ 
+ &lt;br/&gt;
+ &#160;&#160;&#160;&#160;Add&#160;&#160;&#160;&#160;/branches/oo-branch/t/12-std.t
+ (from /branches/oo-branch/t/12-case.t
+ :69)&lt;br/&gt;
+ &lt;br/&gt;renamed to test of standard functions
+ </content>
+</entry>
+__XML__
+$xml = $xml_header . '<updated>2009-05-18T22:46:21Z</updated>' . $xml_footer;
+$feed = XML::Atom::Feed->new(\$xml);
+modules::local::partcllog->process_feed($feed);
+$output = [output()];
+is(scalar @$output, 3, "3 lines of output");
+is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
+is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
+is($$output[0]{text}, 'partcl: r70 | robin.ge++ | branches/oo-branch/t/12- (2 files):' , "karma line");
+is($$output[1]{text}, 'partcl: renamed to test of standard functions' , "log line");
+is($$output[2]{text}, 'partcl: review: http://code.google.com/p/porcupinepascal/source/detail?r=70' , "link line");
+is($$rl{lastrev}, "2009-05-18T22:46:21Z", "lastrev was updated");
+BEGIN { $tests += 7 };
+
+
