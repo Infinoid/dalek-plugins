@@ -169,6 +169,40 @@ sub emit_karma_message {
 }
 
 
+=head2 emit_ticket_karma
+
+    $self->emit_ticket_karma(
+        prefix  => 'TT #',
+        ticket  => $ticket,
+        user    => $username,
+        summary => $summary,
+        action  => 'closed',
+    );
+
+Emit a short log message about a ticket change to the target channels.  Username
+aliases are handled internally.
+
+The message looks like:
+
+TT #699 closed by jkeenan++: manifest_tests Makefile target does not work in release tarball
+
+=cut
+
+sub emit_ticket_karma {
+    use YAML::Syck;
+    my ($self, %args) = @_;
+    my $prefix  = $args{prefix};
+    my $ticket  = $args{ticket};
+    my $user    = $args{user};
+    my $summary = $args{summary};
+    my $action  = $args{action};
+    $user       = "unknown"  unless defined $user;
+    $summary    = ""         unless defined $summary;
+    $prefix     = "Ticket #" unless defined $prefix;
+    $self->put($args{targets}, "$prefix$ticket $action by $user++: $summary");
+}
+
+
 =head2 put
 
     $self->put($targets, $line);

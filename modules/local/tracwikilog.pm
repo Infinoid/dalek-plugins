@@ -17,7 +17,7 @@ sub init {
     my $self = shift;
     $copy_of_self = $self;
     main::lprint("tracwiki trac RSS parser loaded.");
-    main::create_timer("tracwikilog_fetch_feed_timer", $self, "fetch_feed", 180);
+    main::create_timer("tracwikilog_fetch_feed_timer", $self, "fetch_feed", 182);
 }
 
 sub implements {
