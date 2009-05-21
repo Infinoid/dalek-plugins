@@ -18,7 +18,7 @@ parrot-related wikis.
 =head1 IMPLEMENTATION
 
 Fortunately, the servers providing these feeds are generally only running one of
-a very few software packages, e.g. trac, github, googlecode, or svnweb.  Thus,
+a very few software packages, like trac, github, googlecode, or svnweb.  Thus,
 we only really need one parser per server software type, and the actual plugins
 can be simple subclasses which just specify the feed location and repo name.  
-This is already done, at least for github.  Others are on the way.
+This is already done, at least for github and googlecode.  Others are on the way.
