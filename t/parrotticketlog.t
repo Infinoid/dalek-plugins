@@ -98,7 +98,7 @@ Here is the stack trace.
 &lt;/pre&gt;</description>
       <category>newticket</category>
     </item><item>
-      <title>Ticket #694 (docs/dev/fhs.pod:  Is this file still relevant?) created</title>
+      <title>Ticket #694 (docs/dev/fhs.pod… Is this file still relevant?) created</title>
           <dc:creator>jkeenan</dc:creator>
         <pubDate>Thu, 21 May 2009 00:47:45 GMT</pubDate>
         <link>https://trac.parrot.org/parrot/ticket/694</link>
@@ -131,6 +131,6 @@ $output = [output()];
 is(scalar @$output, 2, "2 lines of output");
 is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
 is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
-is($$output[0]{text}, 'TT #694 created by jkeenan++: docs/dev/fhs.pod:  Is this file still relevant?', 'log line');
+is($$output[0]{text}, 'TT #694 created by jkeenan++: docs/dev/fhs.pod... Is this file still relevant?', 'log line');
 is($$output[1]{text}, 'TT #695 created by urkle++: subtest 3 in t/dynoplibs/myops.t segfaults on darwin' , 'log line');
 BEGIN { $tests += 5 };

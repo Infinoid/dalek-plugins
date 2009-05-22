@@ -75,6 +75,7 @@ sub output_item {
     my $desc    = $item->title;
 
     $desc =~ s/<[^>]+>//g;
+    $desc =~ s|…|...|g;
     decode_entities($desc);
     if($desc =~ /^Ticket \#(\d+) \((.+)\) (\S+)\s*$/) {
         my ($ticket, $summary, $action) = ($1, $2, $3);

@@ -107,6 +107,7 @@ sub output_item {
     decode_entities($desc);
     $desc =~ s|^\s+||g;
     $desc =~ s|\s+$||g;
+    $desc =~ s|…|...|g;
     my @log_lines = split(/[\r\n]+/, $desc);
 
     put("parrot: r$rev | $creator++ | $prefix:");
