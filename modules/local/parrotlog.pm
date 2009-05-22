@@ -1,6 +1,8 @@
 package modules::local::parrotlog;
 use strict;
 use warnings;
+use utf8;
+
 use LWP::UserAgent;
 use XML::RAI;
 use HTML::Entities;
