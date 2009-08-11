@@ -1,4 +1,4 @@
-package modules::local::decnum_dynpmcslog;
+package modules::local::dbdilog;
 use strict;
 use warnings;
 use base 'modules::local::googlecodeparser';
