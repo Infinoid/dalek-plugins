@@ -11,7 +11,9 @@ use t::util;
 # entry point to the googlecode parser, even though some of the test logs
 # were taken from other projects.
 load_plugin("karmalog");
-load_plugin("autofeed");
+load_plugin("googlecodeparser");
+my $url = 'http://partcl.googlecode.com/';
+modules::local::googlecodeparser->try_link($url);
 
 my $tests;
 BEGIN { $tests = 0; };
