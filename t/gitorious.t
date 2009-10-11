@@ -7,9 +7,8 @@ use Cwd;
 use lib getcwd();
 use t::util;
 
-# this configures the plumage feed, among others.  We use the partcl feed as
-# an entry point to the googlecode parser, even though some of the test logs
-# were taken from other projects.
+# This configures the parrot-plumage feed; we use this feed as an entry point
+# to the gitorious parser.
 load_plugin("karmalog");
 load_plugin("gitoriousparser");
 my $url = 'http://gitorious.org/parrot-plumage/parrot-plumage';
@@ -105,7 +104,7 @@ $xml = $xml_header . '<updated>2009-09-30T01:07:19Z</updated>' . $xml_footer;
 $feed = XML::Atom::Feed->new(\$xml);
 modules::local::parrot_plumagelog->process_feed($feed);
 $output = [output()];
-is(scalar @$output, 4, "4 lines of output");
+is(scalar @$output, 6, "6 lines of output");
 is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
 is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
 is($$output[0]{text}, 'parrot-plumage: 6d885b2 | japhb++ | :' , "karma line");
