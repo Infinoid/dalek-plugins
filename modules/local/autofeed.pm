@@ -5,6 +5,7 @@ use warnings;
 use LWP::UserAgent;
 
 use modules::local::githubparser;
+use modules::local::gitoriousparser;
 use modules::local::googlecodeparser;
 #use modules::local::tracparser;
 #use modules::local::bitbucketparser;
@@ -22,9 +23,9 @@ rss/atom feed parsers for recognised hosting services.
 
 This plugin scrapes the list of Parrot languages from the Parrot wiki,
 the page named "Languages".  It then searches for links to well-known source
-repository hosting services (currently github and google code) and sets up feed
-parsers for them automatically.  The resulting parsers emit karma messages to
-#parrot on MagNET.
+repository hosting services (currently github, google code and gitorious) and
+sets up feed parsers for them automatically.  The resulting parsers emit karma
+messages to #parrot on MagNET.
 
 =head1 METHODS
 
@@ -92,6 +93,7 @@ do the dirty work.
 sub try_link {
     my ($package, $url) = @_;
     return modules::local::githubparser->try_link($url) if $url =~ /github/;
+    return modules::local::gitoriousparser->try_link($url) if $url =~ /gitorious/;
     return modules::local::googlecodeparser->try_link($url) if $url =~ /google/;
 }
 
