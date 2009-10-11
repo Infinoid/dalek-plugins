@@ -123,7 +123,7 @@ sub try_link {
     # create a dynamic subclass to get the timer callback back to us
     eval "package $modulename; use base 'modules::local::gitoriousparser';";
     $objects_by_package{$modulename} = bless($self, $modulename);
-    main::lprint("$parsername gitorious ATOM parser autoloaded.  $rss_link");
+    main::lprint("$parsername gitorious ATOM parser autoloaded.");
     main::create_timer($parsername."_fetch_feed_timer", $modulename,
         "fetch_feed", 300 + $feed_number++);
 }
