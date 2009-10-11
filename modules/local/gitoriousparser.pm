@@ -74,14 +74,10 @@ sub process_feed {
 
     # skip the first run, to prevent new installs from flooding the channel
     foreach my $item (@items) {
-        my ($rev) = ($item->content->body =~ m|/commit/([a-z0-9]{40})|);
-        if(exists($$self{not_first_time})) {
-            # output new entries to channel
-            next if exists($$self{seen}{$rev});
-            $$self{seen}{$rev} = 1;
-            $self->output_item($item, $rev);
-        } else {
-            $$self{seen}{$rev} = 1;
+        my @revs = $item->content->body =~ m|/commit/([a-z0-9]{40})|g;
+        for my $rev (reverse @revs) {
+            $self->output_item($item, $rev)
+                if !$$self{seen}{$rev}++ && $$self{not_first_time};
         }
     }
     $$self{not_first_time} = 1;
@@ -165,25 +161,41 @@ sub output_item {
         $desc = '(no commit message)';
     }
 
-    my @lines   = split("\n", $desc);
-    my $message = decode_entities($lines[-1]);
-    ($link      = $message) =~m|<a href=".{77}">[a-fA-F0-9]{7}</a>:|;
-    $message    =~ s|</?ul>|| ;
-    $message    =~ s|</?li>|| ;
-    @lines   = split( /<a href.{80}>[a-fA-F0-9]{7}<\/a>:/, $message);
-    $rev        = substr($rev, 0, 7);
+    $desc =  decode_entities($desc);
+    $desc =~ s,(<ul>),$1\n,g;
+    $desc =~ s,(</li>),$1\n,g;
 
-    $self->emit_karma_message(
-        feed    => $$self{feed_name},
-        rev     => $rev,
-        user    => $creator,
-        log     => \@lines,
-        link    => $link,
-        prefix  => "",
-        targets => $$self{targets},
-    );
+    my @lines = split "\n", $desc;
+    for my $line (@lines) {
+        my ($item) = $line =~ m,\s*<li>(.*)</li>$,;
+        next unless $item;
 
-    main::lprint($$self{feed_name}.": output_item: output rev $rev");
+        my ($name, $link, $message)
+            = $item =~ m,^([^<]+)<a href="([^"]+)">[[:xdigit:]]{7}</a>:\s*([^<]+)$,;
+        next unless $link;
+
+        my ($commit) = $link =~ m,/commit/([[:xdigit:]]{40}),;
+        next unless $commit && $commit eq $rev;
+
+        $link = "http://gitorious.org$link"
+            unless $link =~ m,^https?://,;
+
+        # warn "line: $line, name: $name, link: $link, message: $message, commit: $commit\n";
+
+        $commit = substr($commit, 0, 7);
+
+        $self->emit_karma_message(
+            feed    => $$self{feed_name},
+            rev     => $commit,
+            user    => $creator,
+            log     => [$message],
+            link    => $link,
+            prefix  => "",
+            targets => $$self{targets},
+        );
+
+        main::lprint($$self{feed_name}.": output_item: output rev $commit");
+    }
 }
 
 
