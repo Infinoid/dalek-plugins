@@ -10,7 +10,10 @@ use modules::local::googlecodeparser;
 #use modules::local::tracparser;
 #use modules::local::bitbucketparser;
 
-my $url = 'https://trac.parrot.org/parrot/wiki/Languages';
+my @url = (
+    'https://trac.parrot.org/parrot/wiki/Languages',
+    'https://trac.parrot.org/parrot/wiki/Modules',
+);
 
 =head1 NAME
 
@@ -22,10 +25,10 @@ Botnix plugin to scrape the list of Parrot languages and automatically set up
 rss/atom feed parsers for recognised hosting services.
 
 This plugin scrapes the list of Parrot languages from the Parrot wiki,
-the page named "Languages".  It then searches for links to well-known source
-repository hosting services (currently github, google code and gitorious) and
-sets up feed parsers for them automatically.  The resulting parsers emit karma
-messages to #parrot on MagNET.
+the pages named "Languages" and "Modules".  It then searches for links to
+well-known source repository hosting services (currently github, google code
+and gitorious) and sets up feed parsers for them automatically.  The resulting
+parsers emit karma messages to #parrot on MagNET.
 
 =head1 METHODS
 
@@ -34,25 +37,25 @@ messages to #parrot on MagNET.
 This is a pseudo-method called by botnix when the module is first loaded.  It
 starts the ball rolling.  This method has two effects:
 
-    * Scans the list of languages once.
-    * Starts a timer thread which rescans again, once every 4 hours.
+    * Scans the lists of languages and modules once.
+    * Starts a timer thread which rescans again, once every hour.
 
 =cut
 
 sub init {
     my $self = shift;
-    $self->scrape_languages_page();
-    main::create_timer('scrape_Languages', $self, 'scrape_languages_page', 60*60*4);
+    $self->scrape_pages();
+    main::create_timer('scrape_Languages', $self, 'scrape_languages_page', 60*60);
 }
 
 
-=head2 scrape_languages_page
+=head2 scrape_pages
 
-    $self->scrape_languages_page();
+    $self->scrape_pages();
 
-Grab the page, scan for links in the first column of the table.  For each link
-it finds, the try_link() method is called to determine whether the link is
-relevant.
+Grab the pages, scans them for links in the first column of the table.  For
+each link it finds, the try_link() method is called to determine whether the
+link is relevant.
 
 Note, this is not currently doing an XML search, it is doing a substring search.
 I could break it down into a hash tree using XML::TreePP and then enumerate
@@ -66,16 +69,18 @@ promise.
 
 =cut
 
-sub scrape_languages_page {
+sub scrape_pages {
     my $package = shift;
-    my $content = $package->fetch_url($url);
-    return unless defined $content;
-    # this is nasty but straight-forward.
-    my @links = split(/<tr[^>]*><td[^>]*><a(?: class=\S+) href="/, $content);
-    shift @links;
-    foreach my $link (@links) {
-        if($link =~ /^(http[^"]+)"/) {
-            $package->try_link($1);
+    foreach my $url (@url) {
+        my $content = $package->fetch_url($url);
+        next unless defined $content;
+        # this is nasty but straight-forward.
+        my @links = split(/<tr[^>]*><td[^>]*><a(?: class=\S+) href="/, $content);
+        shift @links;
+        foreach my $link (@links) {
+            if($link =~ /^(http[^"]+)"/) {
+                $package->try_link($1);
+            }
         }
     }
 }
