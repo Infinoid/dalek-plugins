@@ -134,8 +134,9 @@ links on the Languages page at time of writing.
 =cut
 
 sub try_link {
-    my ($pkg, $url, $target) = @_;
+    my ($pkg, $url, $target, $branch) = @_;
     $target = ['magnet', '#parrot'] unless defined $target;
+    $branch = 'master' unless defined $branch;
     my($author, $project);
     if($url =~ m|http://(?:wiki.)?github.com/([^/]+)/([^/]+)/?|) {
         $author  = $1;
@@ -166,7 +167,7 @@ sub try_link {
 
     # create new feed
     # url, feed_name, targets, objects_by_package
-    my $rss_link = "http://github.com/feeds/$author/commits/$project/master";
+    my $rss_link = "http://github.com/feeds/$author/commits/$project/$branch";
     my $self = {
         url        => $rss_link,
         feed_name  => $project,
