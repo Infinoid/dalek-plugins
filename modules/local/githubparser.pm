@@ -112,7 +112,7 @@ sub longest_common_prefix {
 
 =head2 try_link
 
-    modules::local::githubparser->try_link($url, ['network', '#channel']);
+    modules::local::githubparser->try_link($url, ['network', '#channel'], $branch);
 
 This is called by autofeed.pm.  Given a github.com URL, try to determine the
 project name and canonical path.  Then configure a feed reader for it if one
@@ -121,6 +121,8 @@ doesn't already exist.
 The array reference containing network and channel are optional.  If not
 specified, magnet/#parrot is assumed.  If the feed already exists but didn't
 have the specified target, the existing feed is extended.
+
+C<$branch> is optional, and defaults to C<master>.
 
 Currently supports 3 URL formats:
 

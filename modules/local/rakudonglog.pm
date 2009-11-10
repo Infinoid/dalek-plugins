@@ -33,7 +33,7 @@ config and simply add the freenode channel to the list of targets.)
 my $url = 'http://github.com/rakudo/rakudo';
 
 sub init {
-    modules::local::githubparser->try_link($url, ['freenode', '#perl6', 'ng']);
+    modules::local::githubparser->try_link($url, ['freenode', '#perl6'], 'ng');
 }
 
 1;
