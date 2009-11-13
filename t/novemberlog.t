@@ -7,9 +7,6 @@ use Cwd;
 use lib getcwd();
 use t::util;
 
-# note: the order these are loaded in determine the order of the target channels,
-# and thus, the tests below depend on this ordering.
-load_plugin("autofeed");
 load_plugin("novemberlog");
 
 my $tests;
@@ -79,8 +76,8 @@ $feed = XML::Atom::Feed->new(\$xml);
 call_func('process_feed', $feed);
 $output = [output()];
 is(scalar @$output, 6, "6 lines of output");
-is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
-is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
+is($$output[0]{net} , 'freenode', "line to freenode/#november-wiki");
+is($$output[0]{chan}, '#november-wiki' , "line to freenode/#november-wiki");
 is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
 is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
 BEGIN { $tests += 5 };
@@ -118,8 +115,8 @@ $feed = XML::Atom::Feed->new(\$xml);
 call_func('process_feed', $feed);
 $output = [output()];
 is(scalar @$output, 12, "12 lines of output");
-is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
-is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
+is($$output[0]{net} , 'freenode', "line to freenode/#november-wiki");
+is($$output[0]{chan}, '#november-wiki' , "line to freenode/#november-wiki");
 is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
 is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
 # The module sorts by <updated> time, but the time is the same for these two commits.

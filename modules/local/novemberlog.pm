@@ -30,10 +30,11 @@ config and simply add the freenode channel to the list of targets.)
 
 =cut
 
-my $url = 'http://github.com/viklund/november-wiki';
+my $url = 'http://github.com/viklund/november';
 
 sub init {
     modules::local::githubparser->try_link($url, ['freenode', '#november-wiki']);
+    modules::local::githubparser->try_link($url, ['freenode', '#perl6']);
 }
 
 1;
