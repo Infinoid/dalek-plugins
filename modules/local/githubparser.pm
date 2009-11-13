@@ -48,8 +48,10 @@ sub fetch_feed {
     my $pkg  = shift;
     my $self = $objects_by_package{$pkg};
     my $atom = XML::Atom::Client->new();
-    my $feed = $atom->getFeed($$self{url});
-    $pkg->process_feed($feed);
+    for (@{$self->{urls}}) {
+        my $feed = $atom->getFeed($_);
+        $pkg->process_feed($feed);
+    }
 }
 
 
@@ -112,7 +114,7 @@ sub longest_common_prefix {
 
 =head2 try_link
 
-    modules::local::githubparser->try_link($url, ['network', '#channel'], $branch);
+    modules::local::githubparser->try_link($url, ['network', '#channel'], $branches);
 
 This is called by autofeed.pm.  Given a github.com URL, try to determine the
 project name and canonical path.  Then configure a feed reader for it if one
@@ -122,7 +124,8 @@ The array reference containing network and channel are optional.  If not
 specified, magnet/#parrot is assumed.  If the feed already exists but didn't
 have the specified target, the existing feed is extended.
 
-C<$branch> is optional, and defaults to C<master>.
+C<$branches> is an optional array reference containing the branches to be
+monitored, and defaults to C<[qw(master)]>.
 
 Currently supports 3 URL formats:
 
@@ -136,9 +139,9 @@ links on the Languages page at time of writing.
 =cut
 
 sub try_link {
-    my ($pkg, $url, $target, $branch) = @_;
+    my ($pkg, $url, $target, $branches) = @_;
     $target = ['magnet', '#parrot'] unless defined $target;
-    $branch = 'master' unless defined $branch;
+    $branches = ['master'] unless defined $branches;
     my($author, $project);
     if($url =~ m|http://(?:wiki.)?github.com/([^/]+)/([^/]+)/?|) {
         $author  = $1;
@@ -169,9 +172,11 @@ sub try_link {
 
     # create new feed
     # url, feed_name, targets, objects_by_package
-    my $rss_link = "http://github.com/feeds/$author/commits/$project/$branch";
+    my @rss_links =
+        map "http://github.com/feeds/$author/commits/$project/$_",
+            @$branches;
     my $self = {
-        url        => $rss_link,
+        urls       => \@@rss_links,
         feed_name  => $project,
         modulename => $modulename,
         targets    => [ $target ],
