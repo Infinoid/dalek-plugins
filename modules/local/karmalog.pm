@@ -189,7 +189,6 @@ TT #699 closed by jkeenan++: manifest_tests Makefile target does not work in rel
 =cut
 
 sub emit_ticket_karma {
-    use YAML::Syck;
     my ($self, %args) = @_;
     my $prefix  = $args{prefix};
     my $ticket  = $args{ticket};
