@@ -7,7 +7,10 @@ my $module;
 my $inst;
 sub load_plugin :Export(:DEFAULT) {
     $module = shift;
-    do "modules/local/$module.pm";
+    my $rv = do "modules/local/$module.pm";
+    return warn "Couldn't parse $module: $@\n" if $@;
+    return warn "Couldn't do $module: $!\n" unless defined $rv;
+    return warn "$module did not return a true value.\n" unless $rv;
     $module = "modules::local::$module";
     $inst   = $module;
     call_func('init');
