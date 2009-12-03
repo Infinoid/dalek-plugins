@@ -41,6 +41,9 @@ our %objects_by_package;
 # $self:
 #   project: rakudo
 #   modulename: rakudo # same thing but with invalid characters changed to "_"
+#   seen:
+#     5c0739f2384ee5a6b7979ce539258a964acd3178: 1
+#     ff4ced6fc2880600fe8ada666b317c2a6fce573d: 1
 #   branches:
 #     master:
 #       url: http://github.com/feeds/rakudo/commits/rakudo/master
@@ -78,6 +81,7 @@ sub process_project {
     foreach my $branch (sort keys %{$$self{branches}}) {
         $self->process_branch($branch);
     }
+    $$self{not_first_time} = 1;
 }
 
 
@@ -124,7 +128,6 @@ sub process_branch {
             $$self{seen}{$rev} = 1;
         }
     }
-    $$self{not_first_time} = 1;
 }
 
 
