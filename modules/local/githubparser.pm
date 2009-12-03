@@ -5,6 +5,7 @@ use warnings;
 use XML::Atom::Client;
 use HTML::Entities;
 
+use modules::local::karmalog;
 use base 'modules::local::karmalog';
 
 =head1 NAME
@@ -18,6 +19,10 @@ is also knowledgeable enough about github's URL schemes to be able to recognise
 repository URLs, extract the project name/owner/path and generate ATOM feed
 URLs.
 
+This is a base class, there is one subclass per tracked project.  For each
+subclass, it keeps track of which branches are being tracked, and for each
+branch, which channels to emit updates.
+
 =cut
 
 
@@ -27,16 +32,39 @@ our $feed_number = 1;
 
 # This is a map of $self objects.  Because botnix does not use full class
 # instances and instead calls package::name->function() to call methods, the
-# actual OO storage for those modules ends up in here.
+# actual OO storage for those modules ends up in here.  This hash maps us
+# back to the $self objects.
 our %objects_by_package;
+
+# Each $self pointer in this hash is a hash tree.  In pseudo-YAML, the layout
+# of $self looks like:
+# $self:
+#   project: rakudo
+#   modulename: rakudo # same thing but with invalid characters changed to "_"
+#   branches:
+#     master:
+#       url: http://github.com/feeds/rakudo/commits/rakudo/master
+#       targets:
+#         -
+#           - magnet
+#           - #parrot
+#         -
+#           - freenode
+#           - #perl6
+#     ng:
+#       url: http://github.com/feeds/rakudo/commits/rakudo/ng
+#       targets:
+#         -
+#           - freenode
+#           - #perl6
 
 
 =head1 METHODS
 
-=head2 fetch_feed
+=head2 process_project
 
-This is a pseudomethod called as a timer callback.  It fetches the feed, parses
-it into an XML::Atom::Feed object and passes that to process_feed().
+This is a pseudomethod called as a timer callback.  It enumerates the branches,
+calling process_branch() for each.
 
 This is the main entry point to this module.  Botnix does not use full class
 instances, instead it just calls by package name.  This function maps from the
@@ -44,21 +72,20 @@ function name to a real $self object (stored in %objects_by_package).
 
 =cut
 
-sub fetch_feed {
+sub process_project {
     my $pkg  = shift;
-    my $self = $objects_by_package{$pkg};
-    my $atom = XML::Atom::Client->new();
-    for (@{$self->{urls}}) {
-        my $feed = $atom->getFeed($_);
-        $pkg->process_feed($feed);
+    my $self = $pkg->get_self();
+    foreach my $branch (sort keys %{$$self{branches}}) {
+        $self->process_branch($branch);
     }
 }
 
 
-=head2 process_feed
+=head2 process_branch
 
-    $self->process_feed($feed);
+    $self->process_branch($branch);
 
+Fetches the ATOM feed for the 
 Enumerates the commits in the feed, emitting any events it hasn't seen before.
 This subroutine manages a "seen" cache in $self, and will take care not to
 announce any commit more than once.
@@ -69,9 +96,16 @@ events.  So it just populates the seen-cache silently.
 
 =cut
 
-sub process_feed {
-    my ($pkg, $feed) = @_;
-    my $self = $objects_by_package{$pkg};
+sub process_branch {
+    my ($self, $branch, $feed) = @_;
+
+    # allow the testsuite to call us in a slightly different way.
+    $self = $self->get_self() unless ref $self;
+    if(!defined($feed)) {
+        my $atom = XML::Atom::Client->new();
+        $feed = $atom->getFeed($$self{branches}{$branch}{url});
+    }
+
     my @items = $feed->entries;
     @items = sort { $a->updated cmp $b->updated } @items; # ascending order
     my $newest = $items[-1];
@@ -85,7 +119,7 @@ sub process_feed {
             # output new entries to channel
             next if exists($$self{seen}{$rev});
             $$self{seen}{$rev} = 1;
-            $self->output_item($item, $link, $rev);
+            $self->output_item($item, $branch, $link, $rev);
         } else {
             $$self{seen}{$rev} = 1;
         }
@@ -114,7 +148,11 @@ sub longest_common_prefix {
 
 =head2 try_link
 
-    modules::local::githubparser->try_link($url, ['network', '#channel'], $branches);
+    modules::local::githubparser->try_link(
+        $url,
+        ['network', '#channel'],
+        [qw(master ng)]
+    );
 
 This is called by autofeed.pm.  Given a github.com URL, try to determine the
 project name and canonical path.  Then configure a feed reader for it if one
@@ -122,9 +160,13 @@ doesn't already exist.
 
 The array reference containing network and channel are optional.  If not
 specified, magnet/#parrot is assumed.  If the feed already exists but didn't
-have the specified target, the existing feed is extended.
+have the specified target, the existing feed is extended.  Similarly, if the
+feed already existed but didn't have the specified branch, the existing feed
+is extended.
 
-C<$branches> is an optional array reference containing the branches to be
+The array reference containing branch names are also optional.  However,
+to prevent ambiguity, you must also specify the network/channel in this case.
+Branches is an optional array reference containing the branches to be
 monitored, and defaults to C<[qw(master)]>.
 
 Currently supports 3 URL formats:
@@ -158,55 +200,70 @@ sub try_link {
     my $parsername = $project . "log";
     my $modulename = "modules::local::" . $parsername;
     $modulename =~ s/-/_/g;
-    if(exists($objects_by_package{$modulename})) {
-        # extend existing feed if necessary
-        my $self = $objects_by_package{$modulename};
+
+    # create project, if necessary
+    my $self = $objects_by_package{$modulename};
+    if(!defined($self)) {
+        $objects_by_package{$modulename} = $self = {
+            project    => $project,
+            modulename => $modulename,
+            branches   => {},
+        };
+
+        # create a dynamic subclass to get the timer callback back to us
+        eval "package $modulename; use base 'modules::local::githubparser';";
+        $objects_by_package{$modulename} = bless($self, $modulename);
+        main::create_timer($parsername."_fetch_feed_timer", $modulename,
+            "fetch_feed", 300 + $feed_number++);
+        main::lprint("github: created project $project ($modulename)");
+    }
+
+    # create branches, if necessary
+    foreach my $branchname (@$branches) {
+        my $branch = $$self{branches}{$branchname};
+        if(!defined($branch)) {
+            my $url = "http://github.com/feeds/$author/commits/$project/$branchname";
+            $$self{branches}{$branchname} = $branch = {
+                url     => $url,
+                targets => [],
+            };
+            main::lprint("github: $project has branch $branchname with feed url $url");
+        }
+
+        # update target list, if necessary
         my $already_have_target = 0;
-        foreach my $this (@{$$self{targets}}) {
+        foreach my $this (@{$$branch{targets}}) {
             $already_have_target++
                 if($$target[0] eq $$this[0] && $$target[1] eq $$this[1]);
         }
-        push(@{$$self{targets}}, $target) unless $already_have_target;
-        return;
+        unless($already_have_target) {
+            push(@{$$branch{targets}}, $target);
+            main::lprint("github: $project/$branchname will output to ".join("/",@$target));
+        }
     }
-
-    # create new feed
-    # url, feed_name, targets, objects_by_package
-    my @rss_links =
-        map "http://github.com/feeds/$author/commits/$project/$_",
-            @$branches;
-    my $self = {
-        urls       => \@@rss_links,
-        feed_name  => $project,
-        modulename => $modulename,
-        targets    => [ $target ],
-    };
-    # create a dynamic subclass to get the timer callback back to us
-    eval "package $modulename; use base 'modules::local::githubparser';";
-    $objects_by_package{$modulename} = bless($self, $modulename);
-    main::lprint("$parsername github ATOM parser autoloaded.");
-    main::create_timer($parsername."_fetch_feed_timer", $modulename,
-        "fetch_feed", 300 + $feed_number++);
 }
 
 
 =head2 output_item
 
-    $self->output_item($item, $link, $revision);
+    $self->output_item($item, $branch, $link, $revision);
 
 Takes an XML::Atom::Entry object, extracts the useful bits from it and calls
 put() to emit the karma message.
 
 The karma message is typically as follows:
 
-feedname: $revision | username++ | $commonprefix:
-feedname: One or more lines of commit log message
-feedname: review: http://link/to/github/diff/page
+feedname/branch: $revision | username++ | $commonprefix:
+feedname/branch: One or more lines of commit log message
+feedname/branch: review: http://link/to/github/diff/page
+
+The "/branch" suffix is only emitted if we track more than one branch for this
+repository.
 
 =cut
 
 sub output_item {
-    my ($self, $item, $link, $rev) = @_;
+    my ($self, $item, $branch, $link, $rev) = @_;
     my $prefix  = 'unknown';
     my $creator = $item->author;
     if(defined($creator)) {
@@ -230,7 +287,7 @@ sub output_item {
         push(@files, $1);
         shift(@lines);
     }
-    return main::lprint($$self{feed_name}.": error parsing filenames from description")
+    return main::lprint($$self{project}.": error parsing filenames from description")
         unless $lines[0] eq '';
     shift(@lines);
     pop(@lines) if $lines[-1] =~ /^git-svn-id: http:/;
@@ -249,17 +306,22 @@ sub output_item {
     my @log_lines = split(/[\r\n]+/, $log);
     $rev = substr($rev, 0, 7);
 
+    my $project = $$self{project};
+    if(scalar keys %{$$self{branches}} > 1) {
+        $project .= "/$branch";
+    }
+
     $self->emit_karma_message(
-        feed    => $$self{feed_name},
+        feed    => $project,
         rev     => $rev,
         user    => $creator,
         log     => \@log_lines,
         link    => $link,
         prefix  => $prefix,
-        targets => $$self{targets},
+        targets => $$self{branches}{$branch}{targets},
     );
 
-    main::lprint($$self{feed_name}.": output_item: output rev $rev");
+    main::lprint($$self{project}.": output_item: output $project rev $rev");
 }
 
 

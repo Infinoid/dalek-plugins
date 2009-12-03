@@ -46,7 +46,7 @@ my $xml = $xml_header . '<updated>2009-05-01T09:32:55-07:00</updated>' . $xml_fo
 my $feed = XML::Atom::Feed->new(\$xml);
 my $rl = modules::local::rakudolog->get_self();
 ok(!exists($$rl{lastrev}), "no lastrev by default");
-call_func('process_feed', $feed);
+call_func('process_branch', 'master', $feed);
 my $output = [output()];
 is(scalar @$output, 0, "nothing output the first time around");
 is($$rl{not_first_time}, 1, "not_first_time was set");
@@ -76,14 +76,16 @@ Big refactor of Rakudo's enums, making them more compliant with S12, and buildin
 __XML__
 $xml = $xml_header . '<updated>2009-05-01T09:58:40-07:00</updated>' . $xml_footer;
 $feed = XML::Atom::Feed->new(\$xml);
-call_func('process_feed', $feed);
+call_func('process_branch', 'master', $feed);
 $output = [output()];
 is(scalar @$output, 6, "6 lines of output");
 is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
 is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
+like($$output[0]{text}, qr|rakudo/master: |, "master branch");
 is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
 is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
-BEGIN { $tests += 5 };
+like($$output[1]{text}, qr|rakudo/master: |, "master branch");
+BEGIN { $tests += 7 };
 
 # update with multiple commits having the same timestamp
 reset_output();
@@ -115,7 +117,7 @@ Add some micro-benchmakrs.&lt;/pre&gt;</content>
 __XML__
 $xml = $xml_header . '<updated>2009-05-15T06:45:18-07:00</updated>' . $xml_footer;
 $feed = XML::Atom::Feed->new(\$xml);
-call_func('process_feed', $feed);
+call_func('process_branch', 'master', $feed);
 $output = [output()];
 is(scalar @$output, 12, "12 lines of output");
 is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
