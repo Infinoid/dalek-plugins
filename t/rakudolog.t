@@ -49,11 +49,12 @@ ok(!exists($$rl{lastrev}), "no lastrev by default");
 call_func('process_branch', 'master', $feed);
 my $output = [output()];
 is(scalar @$output, 0, "nothing output the first time around");
-is($$rl{not_first_time}, 1, "not_first_time was set");
+is($$rl{not_first_time}, undef, "not_first_time was undef by default");
 BEGIN { $tests += 3 };
 
 # update
 reset_output();
+$$rl{not_first_time} = 1;
 $xml_footer = << '__XML__' . $xml_footer;
   <entry>
     <id>tag:github.com,2008:Grit::Commit/7f5af50c19baf360dacc5779b9c013fb14db34d3</id>
