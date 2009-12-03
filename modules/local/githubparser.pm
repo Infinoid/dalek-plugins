@@ -213,8 +213,8 @@ sub try_link {
         # create a dynamic subclass to get the timer callback back to us
         eval "package $modulename; use base 'modules::local::githubparser';";
         $objects_by_package{$modulename} = bless($self, $modulename);
-        main::create_timer($parsername."_fetch_feed_timer", $modulename,
-            "fetch_feed", 300 + $feed_number++);
+        main::create_timer($parsername."_process_project_timer", $modulename,
+            "process_project", 300 + $feed_number++);
         main::lprint("github: created project $project ($modulename)");
     }
 
