@@ -5,7 +5,6 @@ use warnings;
 use XML::Atom::Client;
 use HTML::Entities;
 
-use modules::local::karmalog;
 use base 'modules::local::karmalog';
 
 =head1 NAME
@@ -125,6 +124,7 @@ sub process_branch {
             $$self{seen}{$rev} = 1;
             $self->output_item($item, $branch, $link, $rev);
         } else {
+            # just populate the seen cache
             $$self{seen}{$rev} = 1;
         }
     }
