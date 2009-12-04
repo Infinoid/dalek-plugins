@@ -84,6 +84,47 @@ sub process_feed {
 }
 
 
+=head2 longest_common_prefix
+
+    my $prefix = longest_common_prefix(@files);
+
+Given a list of filenames, like ("src/ops/perl6.ops", "src/classes/IO.pir"),
+returns the common prefix portion.  For the example I just gave, the common
+prefix would be "src/".
+=cut
+
+sub longest_common_prefix {
+    my $prefix = shift;
+    for (@_) {
+        chop $prefix while (! /^\Q$prefix\E/);
+    }
+    return $prefix;
+}
+
+
+=head2 try_link
+
+    modules::local::gitoriousparser->try_link(
+        $url,
+        ['network', '#channel']
+    );
+
+This is called by autofeed.pm.  Given a gitorious.org URL, try to determine
+the project name and canonical path.  Then configure a feed reader for it if
+one doesn't already exist.
+
+The array reference containing network and channel are optional.  If not
+specified, magnet/#parrot is assumed.  If the feed already exists but didn't
+have the specified target, the existing feed is extended.
+
+Currently supports the following URL format:
+
+    http://gitorious.org/projectname/
+
+...with or without the "/" suffix.
+
+=cut
+
 sub try_link {
     my ($pkg, $url, $target) = @_;
     $target = ['magnet', '#parrot'] unless defined $target;
@@ -170,8 +211,8 @@ sub output_item {
         my ($item) = $line =~ m,\s*<li>(.*)</li>$,;
         next unless $item;
 
-        my ($name, $link, $message)
-            = $item =~ m,^([^<]+)<a href="([^"]+)">[[:xdigit:]]{7}</a>:\s*([^<]+)$,;
+        my ($name, $link)
+            = $item =~ m,^([^<]+)<a href="([^"]+)">[[:xdigit:]]{7}</a>:\s*[^<]+$,;
         next unless $link;
 
         my ($commit) = $link =~ m,/commit/([[:xdigit:]]{40}),;
@@ -180,7 +221,37 @@ sub output_item {
         $link = "http://gitorious.org$link"
             unless $link =~ m,^https?://,;
 
-        # warn "line: $line, name: $name, link: $link, message: $message, commit: $commit\n";
+        my $patch = $self->fetch_url("$link.patch");
+        my (@tmp, @log, @files, $this);
+        @tmp = split(/\n+/, $patch);
+        while(defined($this = shift(@tmp))) {
+            last if $this =~ /^Subject:/;
+        }
+        if(defined($this) && $this =~ /^Subject:\s*(?:\[PATCH\] ?)?(.+)/) {
+            push(@log, $1);
+            $this = shift(@tmp);
+            while(defined($this) && $this ne '---') {
+                $this =~ s/^\s+//;
+                push(@log, $this) if length $this;
+                $this = shift(@tmp);
+            }
+        }
+        $this = shift(@tmp);
+        while(defined($this)) {
+            if($this =~ /^\s+(\S+)\s+\|\s+\d+/) {
+                push(@files, $1);
+            } else {
+                last;
+            }
+            $this = shift(@tmp);
+        }
+
+        my $prefix =  longest_common_prefix(@files);
+        $prefix //= '/';
+        $prefix =~ s|^/||;      # cut off the leading slash
+        if(scalar @files > 1) {
+            $prefix .= " (" . scalar(@files) . " files)";
+        }
 
         $commit = substr($commit, 0, 7);
 
@@ -188,9 +259,9 @@ sub output_item {
             feed    => $$self{feed_name},
             rev     => $commit,
             user    => $creator,
-            log     => [$message],
+            log     => \@log,
             link    => $link,
-            prefix  => "",
+            prefix  => $prefix,
             targets => $$self{targets},
         );
 
