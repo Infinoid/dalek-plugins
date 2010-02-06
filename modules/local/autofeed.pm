@@ -45,7 +45,7 @@ starts the ball rolling.  This method has two effects:
 sub init {
     my $self = shift;
     $self->scrape_pages();
-    main::create_timer('scrape_Languages', $self, 'scrape_languages_page', 60*60);
+    main::create_timer('autofeed_timer', $self, 'scrape_pages', 60*60);
 }
 
 
