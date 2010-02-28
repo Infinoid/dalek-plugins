@@ -82,10 +82,10 @@ $output = [output()];
 is(scalar @$output, 6, "6 lines of output");
 is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
 is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
-like($$output[0]{text}, qr|rakudo/master: |, "master branch");
+like($$output[0]{text}, qr|rakudo: |, "master branch");
 is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
 is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
-like($$output[1]{text}, qr|rakudo/master: |, "master branch");
+like($$output[1]{text}, qr|rakudo: |, "master branch");
 BEGIN { $tests += 7 };
 
 # update with multiple commits having the same timestamp
@@ -131,3 +131,34 @@ my @message_list = ($$output[2]{text}, $$output[8]{text});
 is(scalar grep(/Small optimizations/ , @message_list), 1, "log message");
 is(scalar grep(/Add some micro-bench/, @message_list), 1, "log message");
 BEGIN { $tests += 7 };
+
+# update with their post-2010-02-26 feed format (added rel attribute to the <link> tag)
+reset_output();
+$xml_footer = << '__XML__' . $xml_footer;
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/b131f6052a181bdad8f7b9e5abe30c9c2c2e360e</id>
+    <link type="text/html" href="http://github.com/rakudo/rakudo/commit/b131f6052a181bdad8f7b9e5abe30c9c2c2e360e" rel="alternate"/>
+    <title>Split .defined method and defined vtable method for language interop, as per pmichaud++.</title>
+    <updated>2010-02-27T16:46:53-08:00</updated>
+    <content type="html">&lt;pre&gt;m src/builtins/Parcel.pir
+
+Split .defined method and defined vtable method for language interop, as per pmichaud++.&lt;/pre&gt;</content>
+    <author>
+      <name>Jonathan Worthington</name>
+    </author>
+  </entry>
+__XML__
+$xml = $xml_header . '<updated>2010-02-27T16:46:53-08:00</updated>' . $xml_footer;
+$feed = XML::Atom::Feed->new(\$xml);
+call_func('process_branch', 'master', $feed);
+$output = [output()];
+is(scalar @$output, 6, "6 lines of output");
+is($$output[0]{net} , 'magnet'  , "line to magnet/#parrot");
+is($$output[0]{chan}, '#parrot' , "line to magnet/#parrot");
+is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
+is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
+# The module sorts by <updated> time, but the time is the same for these two commits.
+# Do it this way so we don't depend on perl's internal sort algorithm details.
+@message_list = ($$output[2]{text});
+is(scalar grep(/Split .defined method/ , @message_list), 1, "log message");
+BEGIN { $tests += 6 };

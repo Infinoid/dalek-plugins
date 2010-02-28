@@ -108,6 +108,10 @@ sub process_branch {
         my $atom = XML::Atom::Client->new();
         $feed = $atom->getFeed($$self{branches}{$branch}{url});
     }
+    if(!defined($feed)) {
+        warn "could not fetch branch $branch feed " . $$self{branches}{$branch}{url};
+        return;
+    }
 
     my @items = $feed->entries;
     @items = sort { $a->updated cmp $b->updated } @items; # ascending order
@@ -118,12 +122,15 @@ sub process_branch {
     foreach my $item (@items) {
         my $link    = $item->link->href;
         my ($rev)   = $link =~ m|/commit/([a-z0-9]{40})|;
+        my ($proj)  = $link =~ m|http://github.com/[^/]+/([^/]+)/|;
         if(exists($$self{not_first_time})) {
+            return unless $proj = $$self{project};
             # output new entries to channel
             next if exists($$self{seen}{$rev});
             $$self{seen}{$rev} = 1;
             $self->output_item($item, $branch, $link, $rev);
         } else {
+            die "got bad data from github feed" unless $proj = $$self{project};
             # just populate the seen cache
             $$self{seen}{$rev} = 1;
         }
@@ -206,6 +213,7 @@ sub try_link {
 
     # create project, if necessary
     my $self = $objects_by_package{$modulename};
+    my $register_timer = 0;
     if(!defined($self)) {
         $objects_by_package{$modulename} = $self = {
             project    => $project,
@@ -216,8 +224,7 @@ sub try_link {
         # create a dynamic subclass to get the timer callback back to us
         eval "package $modulename; use base 'modules::local::githubparser';";
         $objects_by_package{$modulename} = bless($self, $modulename);
-        main::create_timer($parsername."_process_project_timer", $modulename,
-            "process_project", 300 + $feed_number++);
+        $register_timer = 1;
         main::lprint("github: created project $project ($modulename)");
     }
 
@@ -243,6 +250,11 @@ sub try_link {
             push(@{$$branch{targets}}, $target);
             main::lprint("github: $project/$branchname will output to ".join("/",@$target));
         }
+    }
+
+    if($register_timer) {
+        main::create_timer($parsername."_process_project_timer", $modulename,
+            "process_project", 300 + $feed_number++);
     }
 }
 
