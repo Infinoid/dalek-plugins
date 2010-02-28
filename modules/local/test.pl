@@ -29,7 +29,6 @@ run_function("init");
 
 sub create_timer {
     my ($timername, $self, $functionname, $timeout) = @_;
-    $output_anything = 1;
     run_function($functionname);
     $output_anything = 1;
     run_function($functionname) while $output_anything;
