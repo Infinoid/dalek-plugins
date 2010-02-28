@@ -36,7 +36,6 @@ sub init {
     modules::local::githubparser->try_link(
 	$url,
 	['freenode', '#perl6'],
-	['master', 'ng'],
     );
 }
 
