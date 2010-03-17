@@ -88,6 +88,7 @@ sub output_item {
             user    => $user,
             summary => $summary,
             targets => $$self{targets},
+            url => "http://trac.parrot.org/parrot/ticket/$ticket"
         );
         main::lprint("parrotticketlog: ticket $ticket $action");
     } else {
