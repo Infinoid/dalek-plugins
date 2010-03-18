@@ -17,20 +17,20 @@ plan tests => $tests;
 my $xml_header = << '__XML__';
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
-  <id>tag:github.com,2008:/feeds/viklund/commits/november-wiki/master</id>
-  <link type="text/html" rel="alternate" href="http://github.com/viklund/november-wiki/commits/master/"/>
-  <link type="application/atom+xml" rel="self" href="http://github.com/feeds/viklund/commits/november-wiki/master"/>
-  <title>Recent Commits to november-wiki:master</title>
+  <id>tag:github.com,2008:/feeds/viklund/commits/november/master</id>
+  <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commits/master/"/>
+  <link type="application/atom+xml" rel="self" href="http://github.com/feeds/viklund/commits/november/master"/>
+  <title>Recent Commits to november:master</title>
 __XML__
 
 my $xml_footer = << '__XML__';
   <entry>
     <id>tag:github.com,2008:Grit::Commit/c7d2d7784f80b2c9f05b68d4aa5a6e21a2f2a257</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november-wiki/commit/c7d2d7784f80b2c9f05b68d4aa5a6e21a2f2a257"/>
-    <title>Merge branch 'master' of git@github.com:viklund/november-wiki</title>
+    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/c7d2d7784f80b2c9f05b68d4aa5a6e21a2f2a257"/>
+    <title>Merge branch 'master' of git@github.com:viklund/november</title>
     <updated>2009-05-01T09:32:55-07:00</updated>
     <content type="html">&lt;pre&gt;
-Merge branch 'master' of git@github.com:viklund/november-wikilt;/pre&gt;</content>
+Merge branch 'master' of git@github.com:viklund/novemberlt;/pre&gt;</content>
     <author>
       <name>pmichaud</name>
     </author>
@@ -55,7 +55,7 @@ $$rl{not_first_time} = 1;
 $xml_footer = << '__XML__' . $xml_footer;
   <entry>
     <id>tag:github.com,2008:Grit::Commit/7f5af50c19baf360dacc5779b9c013fb14db34d3</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november-wiki/commit/7f5af50c19baf360dacc5779b9c013fb14db34d3"/>
+    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/7f5af50c19baf360dacc5779b9c013fb14db34d3"/>
     <title>Big refactor of Rakudo's enums, making them more compliant with S12, and building them with much less generated code. Track an enum related grammar change from STD.pm too. Also gets rid of various bits of cruft that only hung around because of the previous enums implementation needing them. Bool is no longer sort-of-enum-ish (before we had some curious interactions there). Also an infinite loop in infix:&lt;but&gt; is fixed.</title>
     <updated>2009-05-01T09:58:40-07:00</updated>
     <content type="html">&lt;pre&gt;m src/builtins/enums.pir
@@ -88,7 +88,7 @@ reset_output();
 $xml_footer = << '__XML__' . $xml_footer;
   <entry>
     <id>tag:github.com,2008:Grit::Commit/5bd02be9924c2f6013e4601e55d103b1e1a30a14</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november-wiki/commit/5bd02be9924c2f6013e4601e55d103b1e1a30a14"/>
+    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/5bd02be9924c2f6013e4601e55d103b1e1a30a14"/>
     <title>Small optimizations to signature binding; costs us a PMC creation and a method call less every invocation of something that has a signature, which gives a 7% speed-up in a calling benchmark.</title>
     <updated>2009-05-15T06:45:18-07:00</updated>
     <content type="html">&lt;pre&gt;m src/classes/Signature.pir
@@ -100,7 +100,7 @@ Small optimizations to signature binding; costs us a PMC creation and a method c
   </entry>
   <entry>
     <id>tag:github.com,2008:Grit::Commit/b49cce1a84c1f229d1c542c2dc2556e2912aa960</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november-wiki/commit/b49cce1a84c1f229d1c542c2dc2556e2912aa960"/>
+    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/b49cce1a84c1f229d1c542c2dc2556e2912aa960"/>
     <title>Add some micro-benchmakrs.</title>
     <updated>2009-05-15T06:45:18-07:00</updated>
     <content type="html">&lt;pre&gt;+ tools/benchmark.pl
