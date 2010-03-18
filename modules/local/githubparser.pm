@@ -124,7 +124,7 @@ sub process_branch {
         my ($rev)   = $link =~ m|/commit/([a-z0-9]{40})|;
         my ($proj)  = $link =~ m|http://github.com/[^/]+/([^/]+)/|;
         if(exists($$self{not_first_time})) {
-            return unless $proj = $$self{project};
+            return unless $proj eq $$self{project};
             # output new entries to channel
             next if exists($$self{seen}{$rev});
             $$self{seen}{$rev} = 1;
