@@ -201,7 +201,7 @@ sub emit_ticket_karma {
     $prefix     = "Ticket #" unless defined $prefix;
     $user       = $aliases{$user} if exists $aliases{$user};
     $self->put($args{targets}, "$prefix$ticket $action by $user++: $summary");
-    $self->put($args{targets}, "$prefix$url") if defined $url;
+    $self->put($args{targets}, "$prefix$ticket: $url") if defined $url;
 }
 
 
