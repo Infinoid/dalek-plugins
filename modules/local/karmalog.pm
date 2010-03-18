@@ -195,13 +195,13 @@ sub emit_ticket_karma {
     my $user    = $args{user};
     my $summary = $args{summary};
     my $action  = $args{action};
-    my $url = $args{url};
+    my $url     = $args{url};
     $user       = "unknown"  unless defined $user;
     $summary    = ""         unless defined $summary;
     $prefix     = "Ticket #" unless defined $prefix;
     $user       = $aliases{$user} if exists $aliases{$user};
     $self->put($args{targets}, "$prefix$ticket $action by $user++: $summary");
-    $self->put($args{targets}, "$url");
+    $self->put($args{targets}, "$prefix$url") if defined $url;
 }
 
 
