@@ -2,7 +2,7 @@ package modules::local::githubparser;
 use strict;
 use warnings;
 
-use XML::Atom::Client;
+use YAML::Syck;
 use HTML::Entities;
 
 use base 'modules::local::karmalog';
@@ -105,23 +105,22 @@ sub process_branch {
     # allow the testsuite to call us in a slightly different way.
     $self = $self->get_self() unless ref $self;
     if(!defined($feed)) {
-        my $atom = XML::Atom::Client->new();
-        $feed = $atom->getFeed($$self{branches}{$branch}{url});
+        $feed = get_yaml($$self{branches}{$branch}{url});
     }
     if(!defined($feed)) {
         warn "could not fetch branch $branch feed " . $$self{branches}{$branch}{url};
         return;
     }
 
-    my @items = $feed->entries;
-    @items = sort { $a->updated cmp $b->updated } @items; # ascending order
+    my @items = @{$$feed{commits}};
+    @items = sort { $$a{committed_date} cmp $$b{committed_date} } @items; # ascending order
     my $newest = $items[-1];
-    my $latest = $newest->updated;
+    my $latest = $$newest{committed_date};
 
     # skip the first run, to prevent new installs from flooding the channel
     foreach my $item (@items) {
-        my $link    = $item->link->href;
-        my ($rev)   = $link =~ m|/commit/([a-z0-9]{40})|;
+        my $link    = $$item{url};
+        my ($rev)   = $$item{id};
         my ($proj)  = $link =~ m|http://github.com/[^/]+/([^/]+)/|;
         if(exists($$self{not_first_time})) {
             return unless $proj eq $$self{project};
@@ -232,7 +231,8 @@ sub try_link {
     foreach my $branchname (@$branches) {
         my $branch = $$self{branches}{$branchname};
         if(!defined($branch)) {
-            my $url = "http://github.com/feeds/$author/commits/$project/$branchname";
+            # http://github.com/api/v2/yaml/commits/list/rakudo/rakudo/master
+            my $url = "http://github.com/api/v2/yaml/commits/list/$author/$project/$branchname";
             $$self{branches}{$branchname} = $branch = {
                 url     => $url,
                 targets => [],
@@ -280,45 +280,23 @@ repository.
 sub output_item {
     my ($self, $item, $branch, $link, $rev) = @_;
     my $prefix  = 'unknown';
-    my $creator = $item->author;
-    if(defined($creator)) {
-        $creator = $creator->name;
-    } else {
-        $creator = 'unknown';
-    }
-    my $desc    = $item->content;
-    if(defined($desc)) {
-        $desc = $desc->body;
-    } else {
-        $desc = '(no commit message)';
-    }
+    my $creator = $$item{author}{login};
+    $creator = $$item{author}{name} unless defined $creator;
+    $creator = 'unknown'            unless defined $creator;
+    my $desc    = $$item{message};
+    $desc = '(no commit message)' unless defined $desc;
 
-    my ($log, $files);
-    $desc =~ s/^.*<pre>//;
-    $desc =~ s/<\/pre>.*$//;
     my @lines = split("\n", $desc);
-    my @files;
-    while($lines[0] =~ /^[+m-] (.+)/) {
-        push(@files, $1);
-        shift(@lines);
-    }
-    return main::lprint($$self{project}.": error parsing filenames from description")
-        unless $lines[0] eq '';
-    shift(@lines);
     pop(@lines) if $lines[-1] =~ /^git-svn-id: http:/;
     pop(@lines) while scalar(@lines) && $lines[-1] eq '';
-    $log = join("\n", @lines);
 
-    $prefix =  longest_common_prefix(@files);
-    $prefix //= '/';
-    $prefix =~ s|^/||;      # cut off the leading slash
-    if(scalar @files > 1) {
-        $prefix .= " (" . scalar(@files) . " files)";
-    }
+#    $prefix = "";
+#    $prefix //= '/';
+#    $prefix =~ s|^/||;      # cut off the leading slash
+#    if(scalar @files > 1) {
+#        $prefix .= " (" . scalar(@files) . " files)";
+#    }
 
-    $log =~ s|<br */>||g;
-    decode_entities($log);
-    my @log_lines = split(/[\r\n]+/, $log);
     $rev = substr($rev, 0, 7);
 
     my $project = $$self{project};
@@ -330,9 +308,9 @@ sub output_item {
         feed    => $project,
         rev     => $rev,
         user    => $creator,
-        log     => \@log_lines,
+        log     => \@lines,
         link    => $link,
-        prefix  => $prefix,
+#        prefix  => $prefix,
         targets => $$self{branches}{$branch}{targets},
     );
 
@@ -363,6 +341,27 @@ It isn't used in production.
 sub get_self {
     my $pkg = shift;
     return $objects_by_package{$pkg};
+}
+
+=head2 fetch_yaml
+
+Given a URL, fetches content and tries to parse as a YAML document.  Returns
+undef on error.
+
+=cut
+
+my $lwp = LWP::UserAgent->new();
+$lwp->timeout(60);
+$lwp->env_proxy();
+
+sub fetch_yaml {
+    my $url = shift;
+    my $response = $lwp->get($url);
+    if($response->is_success) {
+        my $rv = Load($response->content);
+        return $rv;
+    }
+    return undef;
 }
 
 1;
