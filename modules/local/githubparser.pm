@@ -343,7 +343,7 @@ sub get_self {
     return $objects_by_package{$pkg};
 }
 
-=head2 fetch_yaml
+=head2 get_yaml
 
 Given a URL, fetches content and tries to parse as a YAML document.  Returns
 undef on error.
@@ -354,7 +354,7 @@ my $lwp = LWP::UserAgent->new();
 $lwp->timeout(60);
 $lwp->env_proxy();
 
-sub fetch_yaml {
+sub get_yaml {
     my $url = shift;
     my $response = $lwp->get($url);
     if($response->is_success) {
