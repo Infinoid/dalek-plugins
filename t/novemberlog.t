@@ -14,33 +14,33 @@ BEGIN { $tests = 0; };
 
 plan tests => $tests;
 
-my $xml_header = << '__XML__';
-<?xml version="1.0" encoding="UTF-8"?>
-<feed xml:lang="en-US" xmlns="http://www.w3.org/2005/Atom">
-  <id>tag:github.com,2008:/feeds/viklund/commits/november/master</id>
-  <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commits/master/"/>
-  <link type="application/atom+xml" rel="self" href="http://github.com/feeds/viklund/commits/november/master"/>
-  <title>Recent Commits to november:master</title>
-__XML__
+my $yaml_header = << '__YAML__';
+--- 
+commits: 
+__YAML__
 
-my $xml_footer = << '__XML__';
-  <entry>
-    <id>tag:github.com,2008:Grit::Commit/c7d2d7784f80b2c9f05b68d4aa5a6e21a2f2a257</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/c7d2d7784f80b2c9f05b68d4aa5a6e21a2f2a257"/>
-    <title>Merge branch 'master' of git@github.com:viklund/november</title>
-    <updated>2009-05-01T09:32:55-07:00</updated>
-    <content type="html">&lt;pre&gt;
-Merge branch 'master' of git@github.com:viklund/novemberlt;/pre&gt;</content>
-    <author>
-      <name>pmichaud</name>
-    </author>
-  </entry>
-</feed>
-__XML__
+my $yaml_footer = << '__YAML__';
+- parents: 
+  - id: da4527eb728cf268cfcdbb772b2c781458c49994
+  author: 
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+  url: http://github.com/viklund/november/commit/78805c2e9337d2d72a28b11e632b37cd31feeb8c
+  id: 78805c2e9337d2d72a28b11e632b37cd31feeb8c
+  committed_date: "2009-11-01T12:57:46-08:00"
+  authored_date: "2009-11-01T12:57:46-08:00"
+  message: "[08-formatting-and-links.t] fixed bitrot"
+  tree: 93b789bdadc6dc60119959806422481e8701b4fb
+  committer: 
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+__YAML__
 
 # initial sync
-my $xml = $xml_header . '<updated>2009-05-01T09:32:55-07:00</updated>' . $xml_footer;
-my $feed = XML::Atom::Feed->new(\$xml);
+my $yaml = $yaml_header . $yaml_footer;
+my $feed = YAML::Syck::Load($yaml);
 my $rl = modules::local::novemberlog->get_self();
 ok(!exists($$rl{lastrev}), "no lastrev by default");
 call_func('process_branch', 'master', $feed);
@@ -52,28 +52,26 @@ BEGIN { $tests += 3 };
 # update
 reset_output();
 $$rl{not_first_time} = 1;
-$xml_footer = << '__XML__' . $xml_footer;
-  <entry>
-    <id>tag:github.com,2008:Grit::Commit/7f5af50c19baf360dacc5779b9c013fb14db34d3</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/7f5af50c19baf360dacc5779b9c013fb14db34d3"/>
-    <title>Big refactor of Rakudo's enums, making them more compliant with S12, and building them with much less generated code. Track an enum related grammar change from STD.pm too. Also gets rid of various bits of cruft that only hung around because of the previous enums implementation needing them. Bool is no longer sort-of-enum-ish (before we had some curious interactions there). Also an infinite loop in infix:&lt;but&gt; is fixed.</title>
-    <updated>2009-05-01T09:58:40-07:00</updated>
-    <content type="html">&lt;pre&gt;m src/builtins/enums.pir
-m src/builtins/guts.pir
-m src/builtins/op.pir
-m src/classes/Abstraction.pir
-m src/classes/Bool.pir
-m src/parser/actions.pm
-m src/parser/grammar.pg
-
-Big refactor of Rakudo's enums, making them more compliant with S12, and building them with much less generated code. Track an enum related grammar change from STD.pm too. Also gets rid of various bits of cruft that only hung around because of the previous enums implementation needing them. Bool is no longer sort-of-enum-ish (before we had some curious interactions there). Also an infinite loop in infix:&amp;lt;but&amp;gt; is fixed.&lt;/pre&gt;</content>
-    <author>
-      <name>jnthn</name>
-    </author>
-  </entry>
-__XML__
-$xml = $xml_header . '<updated>2009-05-01T09:58:40-07:00</updated>' . $xml_footer;
-$feed = XML::Atom::Feed->new(\$xml);
+$yaml_footer = << '__YAML__' . $yaml_footer;
+- parents:
+  - id: 6d57c895b86859b5c2c7305d21d3b6ad0dd6bde2
+  author:
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+  url: http://github.com/viklund/november/commit/4e56a149a03c010a31d279d4bba93bf
+  id: 4e56a149a03c010a31d279d4bba93bf3b9ca74fe
+  committed_date: "2010-05-05T07:10:11-07:00"
+  authored_date: "2010-05-05T07:10:11-07:00"
+  message: "[docs/blog-posts.md] fixed copy-paste-o"
+  tree: 314e6df17f751c1811b2548a383a7cef5c596b93
+  committer:
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+__YAML__
+$yaml = $yaml_header . $yaml_footer;
+$feed = YAML::Syck::Load($yaml);
 call_func('process_branch', 'master', $feed);
 $output = [output()];
 is(scalar @$output, 6, "6 lines of output");
@@ -85,44 +83,59 @@ BEGIN { $tests += 5 };
 
 # update with multiple commits having the same timestamp
 reset_output();
-$xml_footer = << '__XML__' . $xml_footer;
-  <entry>
-    <id>tag:github.com,2008:Grit::Commit/5bd02be9924c2f6013e4601e55d103b1e1a30a14</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/5bd02be9924c2f6013e4601e55d103b1e1a30a14"/>
-    <title>Small optimizations to signature binding; costs us a PMC creation and a method call less every invocation of something that has a signature, which gives a 7% speed-up in a calling benchmark.</title>
-    <updated>2009-05-15T06:45:18-07:00</updated>
-    <content type="html">&lt;pre&gt;m src/classes/Signature.pir
+$yaml_footer = << '__YAML__' . $yaml_footer;
+- parents:
+  - id: c5fd6a474718a4e7a986db3216c7ea63ecd12387
+  author:
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+  url: http://github.com/viklund/november/commit/6d57c895b86859b5c2c7305d21d3b6a
+  id: 6d57c895b86859b5c2c7305d21d3b6ad0dd6bde2
+  committed_date: "2010-05-05T07:05:17-07:00"
+  authored_date: "2010-05-05T07:05:17-07:00"
+  message: |-
+    [docs/blog-posts.md] links to all known posts
 
-Small optimizations to signature binding; costs us a PMC creation and a method call less every invocation of something that has a signature, which gives a 7% speed-up in a calling benchmark.&lt;/pre&gt;</content>
-    <author>
-      <name>jnthn</name>
-    </author>
-  </entry>
-  <entry>
-    <id>tag:github.com,2008:Grit::Commit/b49cce1a84c1f229d1c542c2dc2556e2912aa960</id>
-    <link type="text/html" rel="alternate" href="http://github.com/viklund/november/commit/b49cce1a84c1f229d1c542c2dc2556e2912aa960"/>
-    <title>Add some micro-benchmakrs.</title>
-    <updated>2009-05-15T06:45:18-07:00</updated>
-    <content type="html">&lt;pre&gt;+ tools/benchmark.pl
+    ...about November. Tried to find them all in my feed; might have missed seme
+    Definitely missed some from other people. Feel free to supplement.
+  tree: ecaf0815787f742fa9976883c7a40d4b7f744a73
+  committer:
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+- parents:
+  - id: 95134d49a4d5e168ad17244bbcfd9927cf684cf4
+  author:
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+  url: http://github.com/viklund/november/commit/c5fd6a474718a4e7a986db3216c7ea6
+  id: c5fd6a474718a4e7a986db3216c7ea63ecd12387
+  committed_date: "2010-05-05T07:05:17-07:00"
+  authored_date: "2010-05-05T07:05:17-07:00"
+  message: |-
+    [Makefile] added to version control
 
-Add some micro-benchmakrs.&lt;/pre&gt;</content>
-    <author>
-      <name>jnthn</name>
-    </author>
-  </entry>
-__XML__
-$xml = $xml_header . '<updated>2009-05-15T06:45:18-07:00</updated>' . $xml_footer;
-$feed = XML::Atom::Feed->new(\$xml);
+    It assumes an installed 'perl6', as opposed to the old one.
+  tree: aa0438d1b6ede0bcea2cfeb4880e5ddd512697bf
+  committer:
+    name: Carl Masak
+    login: masak
+    email: cmasak@gmail.com
+__YAML__
+$yaml = $yaml_header . $yaml_footer;
+$feed = YAML::Syck::Load($yaml);
 call_func('process_branch', 'master', $feed);
 $output = [output()];
-is(scalar @$output, 12, "12 lines of output");
+is(scalar @$output, 22, "22 lines of output");
 is($$output[0]{net} , 'freenode', "line to freenode/#november-wiki");
 is($$output[0]{chan}, '#november-wiki' , "line to freenode/#november-wiki");
 is($$output[1]{net} , 'freenode', "line to freenode/#perl6");
 is($$output[1]{chan}, '#perl6'  , "line to freenode/#perl6");
 # The module sorts by <updated> time, but the time is the same for these two commits.
 # Do it this way so we don't depend on perl's internal sort algorithm details.
-my @message_list = ($$output[2]{text}, $$output[8]{text});
-is(scalar grep(/Small optimizations/ , @message_list), 1, "log message");
-is(scalar grep(/Add some micro-bench/, @message_list), 1, "log message");
+my @message_list = ($$output[6]{text}, $$output[14]{text});
+is(scalar grep(/Tried to find them/ , @message_list), 1, "log message");
+is(scalar grep(/added to version/, @message_list), 1, "log message");
 BEGIN { $tests += 7 };

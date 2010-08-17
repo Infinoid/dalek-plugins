@@ -216,8 +216,10 @@ sub try_link {
     if(!defined($self)) {
         $objects_by_package{$modulename} = $self = {
             project    => $project,
+            author     => $author,
             modulename => $modulename,
             branches   => {},
+            commit     => "http://github.com/api/v2/yaml/commits/show/$author/$project/",
         };
 
         # create a dynamic subclass to get the timer callback back to us
@@ -290,12 +292,26 @@ sub output_item {
     pop(@lines) if $lines[-1] =~ /^git-svn-id: http:/;
     pop(@lines) while scalar(@lines) && $lines[-1] eq '';
 
-#    $prefix = "";
-#    $prefix //= '/';
-#    $prefix =~ s|^/||;      # cut off the leading slash
-#    if(scalar @files > 1) {
-#        $prefix .= " (" . scalar(@files) . " files)";
-#    }
+    my @files;
+    my $commit = $$self{commit} . $rev;
+    $commit = get_yaml($commit);
+    if(defined($commit)) {
+        $commit = $$commit{commit};
+        @files = map { $$_{filename} } (@{$$commit{modified}});
+        @files = (@files, @{$$commit{added}})   if exists $$commit{added};
+        @files = (@files, @{$$commit{removed}}) if exists $$commit{removed};
+        $prefix = longest_common_prefix(@files);
+        if(defined($prefix) && length($prefix)) {
+            # cut off the leading slash.
+            $prefix =~ s|^/||;
+        } else {
+            # add a leading slash, just to be different.
+            $prefix = '/' unless(defined($prefix) && length($prefix));
+        }
+        if(scalar @files > 1) {
+            $prefix .= " (" . scalar(@files) . " files)";
+        }
+    }
 
     $rev = substr($rev, 0, 7);
 
@@ -310,7 +326,7 @@ sub output_item {
         user    => $creator,
         log     => \@lines,
         link    => $link,
-#        prefix  => $prefix,
+        prefix  => $prefix,
         targets => $$self{branches}{$branch}{targets},
     );
 
