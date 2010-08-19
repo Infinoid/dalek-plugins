@@ -1,4 +1,4 @@
-package modules::local::rakudolog;
+package modules::local::6modellog;
 use strict;
 use warnings;
 use base 'modules::local::githubparser';
@@ -6,7 +6,7 @@ use base 'modules::local::githubparser';
 
 =head1 NAME
 
-    modules::local::rakudolog
+    modules::local::6modellog
 
 =head1 DESCRIPTION
 
