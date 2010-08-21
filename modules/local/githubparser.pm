@@ -283,8 +283,8 @@ sub output_item {
     my ($self, $item, $branch, $link, $rev) = @_;
     my $prefix  = 'unknown';
     my $creator = $$item{author}{login};
-    $creator = $$item{author}{name} unless defined $creator;
-    $creator = 'unknown'            unless defined $creator;
+    $creator = $$item{author}{name} unless(defined $creator && length $creator);
+    $creator = 'unknown'            unless(defined $creator && length $creator);
     my $desc    = $$item{message};
     $desc = '(no commit message)' unless defined $desc;
 
