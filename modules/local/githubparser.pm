@@ -208,7 +208,7 @@ sub try_link {
 
     my $parsername = $project . "log";
     my $modulename = "modules::local::" . $parsername;
-    $modulename =~ s/-/_/g;
+    $modulename =~ s/[-\.]/_/g;
 
     # create project, if necessary
     my $self = $objects_by_package{$modulename};
