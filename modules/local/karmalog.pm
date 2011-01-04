@@ -4,7 +4,7 @@ use warnings;
 
 use LWP::UserAgent;
 
-my $url = 'https://svn.parrot.org/parrot/trunk/CREDITS';
+my $url = 'https://github.com/parrot/parrot/raw/master/CREDITS';
 
 =head1 NAME
 
